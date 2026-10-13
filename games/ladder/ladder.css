@@ -1,0 +1,21 @@
+/* 사다리: 이름·결과 칸과 세로줄이 같은 n칸. 글자 크기는 칸 너비에 맞춤 (12명이어도 폰에서 들어가게, 프로젝터에선 크게) */
+.play-one { max-width: 1300px; margin: 0 auto; }
+.ladder-names, .ladder-prizes { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); container-type: inline-size; }
+.ladder-names > *, .ladder-prizes > * {
+  --lc: var(--line);
+  min-width: 0; margin: 0 2px; padding: .5rem 2px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface);
+  font-size: clamp(.7rem, calc(100cqi / var(--n) * .15), 1.15rem); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none;
+}
+.ladder-names input:focus, .ladder-prizes input:focus { border-color: var(--accent); }
+.ladder-names button { font-weight: 600; cursor: pointer; }
+.ladder-names button:hover { border-color: var(--lc); }
+.ladder-names button.done, .ladder-prizes .shown { border-color: var(--lc); background: color-mix(in srgb, var(--lc) 18%, var(--surface)); }
+.ladder-prizes .shown { font-weight: 700; }
+.ladder-prizes .hidden { color: var(--faint); }
+.ladder-box { min-height: 40px; }
+.ladder-blank { display: grid; place-items: center; height: 120px; margin: 4px 2px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--faint); font-size: 1.4rem; }
+svg.ladder { display: block; }
+.ladder .rail, .ladder .rung { stroke: var(--faint); stroke-width: .16rem; stroke-linecap: round; }
+.ladder .trail { fill: none; stroke-width: .32rem; stroke-linejoin: round; stroke-linecap: round; }
+.ladder-results { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.ladder-results li { padding: .2rem .7rem; border-radius: 99px; background: color-mix(in srgb, var(--lc) 18%, var(--surface)); font-size: .9rem; font-weight: 600; }
