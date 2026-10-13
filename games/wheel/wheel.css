@@ -1,0 +1,21 @@
+/* 룰렛 판: 위 바늘(▼)은 그대로, 판(.wheel)이 돎. 큰 화면에선 화면 높이에 맞춰 커짐 */
+.play-stage { overflow: hidden; } /* 돌아간 판의 네모 영역이 화면 밖으로 나가 폰에서 옆으로 밀리지 않게 */
+.wheel-box { display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; }
+.wheel-wrap { position: relative; width: min(100%, 66vh, 720px); aspect-ratio: 1; }
+.wheel { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; } /* 돌린 판의 네모 모서리가 아래 단추를 가리지 않게 */
+.wheel-svg { display: block; width: 100%; height: 100%; }
+.wheel-svg path { stroke: var(--surface); stroke-width: 2; }
+.wheel-svg text { fill: #26282B; text-anchor: end; dominant-baseline: middle; font-weight: 600; pointer-events: none; }
+.wheel-svg text.left { text-anchor: start; }
+.wheel-hub { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.wheel-empty { fill: var(--surface-2); stroke: var(--line); stroke-width: 2; stroke-dasharray: 6 6; }
+.wheel-pointer { position: absolute; z-index: 1; top: -.5rem; left: 50%; transform: translateX(-50%); border: .8rem solid transparent; border-top: 1.5rem solid var(--text); border-bottom: 0; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .25)); }
+.spin-btn { padding: .7rem 2.4rem; font-size: 1.1rem; }
+.wheel-result { min-height: 3rem; }
+.wheel-result .result-text { font-size: 2rem; }
+.saved-lists { margin-bottom: .3rem; }
+.play-side textarea { margin: 0 0 .3rem; }
+@media (max-width: 900px) {
+  .wheel-wrap { width: min(100%, 360px); }
+  .wheel-result .result-text { font-size: 1.6rem; }
+}
