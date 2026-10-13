@@ -1,0 +1,84 @@
+/* 타로: 밤 테이블 같은 남색 바탕에 금색 테두리 (라이트/다크와 상관없이 이 페이지는 늘 어둡게). 폰 우선, 큰 화면에선 카드가 커짐 */
+:root {
+  --bg: #15142A; --surface: #1E1D38; --surface-2: #26254A; --line: #34335C;
+  --text: #EEEAF6; --muted: #A7A3C2; --faint: #6E6A8E;
+  --accent: #D9B45A; --accent-soft: #3A3350; --on-accent: #1A1530; --danger: #FF7A7A;
+  --shadow: none; --card-ink: #2A2340; --card-paper: #F6EFDD;
+  color-scheme: dark;
+}
+main { max-width: 860px; display: flex; flex-direction: column; gap: 1rem; }
+.panel { gap: .7rem; }
+.panel h2 { margin: 0; font-size: 1.05rem; }
+.panel-head h2 { margin: 0; }
+.panel > .hint { margin: 0; }
+.ask-line { margin: 0; font-weight: 600; }
+
+/* 1. 스프레드·질문 */
+.spread-seg { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; }
+.spread-seg button { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .5rem .3rem; }
+.spread-seg small { font-size: .75rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.chip { padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 99px; background: transparent; font-size: .85rem; color: var(--muted); cursor: pointer; }
+.chip:hover { color: var(--text); background: var(--surface-2); }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--text); font-weight: 600; }
+.faq:empty { display: none; }
+.check { display: flex; align-items: center; gap: .5rem; font-size: .95rem; cursor: pointer; }
+.check input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); }
+.tarot-setup .big { align-self: center; margin-top: .3rem; }
+
+/* 2. 고르기: 자리 표시 + 부채꼴로 펼친 뒷면 카드 (saju_lab에서) */
+.slots { display: flex; flex-wrap: wrap; gap: .4rem; }
+.slot { padding: .2rem .6rem; border: 1px dashed var(--line); border-radius: 8px; font-size: .8rem; color: var(--muted); }
+.slot.next { border: 1px solid var(--accent); color: var(--text); }
+.slot.filled { border-style: solid; background: var(--accent-soft); color: var(--text); }
+.deck { --w: clamp(58px, 7vw, 88px); position: relative; height: calc(var(--w) * 1.6 + 54px); width: 100%; max-width: calc(var(--n) * var(--w) + 40px); margin: .6rem auto 0; }
+.deck .dk {
+  position: absolute; bottom: 22px; left: calc(20px + (100% - 40px - var(--w)) * var(--x)); width: var(--w); height: calc(var(--w) * 1.6); padding: 0; border-radius: 8px; cursor: pointer;
+  color: var(--on-accent); font-weight: 700; font-size: 1rem; border: 1.5px solid var(--accent); box-shadow: -2px 2px 6px rgba(0, 0, 0, .45);
+  background: radial-gradient(circle, var(--accent) 0 5px, transparent 6px), repeating-linear-gradient(45deg, #2B2852 0 6px, #232046 6px 12px);
+  transform-origin: 50% 100%; transform: translateY(var(--dy)) rotate(var(--rot)); transition: transform .15s ease;
+}
+.deck .dk:hover, .deck .dk:focus-visible { transform: translateY(calc(var(--dy) - 16px)) rotate(var(--rot)); outline: none; }
+.deck .dk.taken { transform: translateY(calc(var(--dy) + 8px)) rotate(var(--rot)); background: var(--accent); opacity: .35; cursor: default; } /* 고른 카드는 판에서 빠진 듯 흐리게 */
+.deck.deal .dk { animation: deal .45s ease backwards; animation-delay: calc(var(--i) * 45ms); }
+@keyframes deal { from { opacity: 0; transform: translateY(40px) rotate(0); } }
+
+/* 3. 스프레드 판: 카드 비율 7:12, 글자는 카드 너비에 맞춤 */
+.spread { display: grid; justify-content: center; gap: .9rem .6rem; margin: .4rem 0; }
+.spread-one { --cw: min(44vw, 200px); grid-template-areas: "c1"; }
+.spread-three, .spread-sao { --cw: min(27vw, 180px); grid-template-areas: "c1 c2 c3"; }
+.spread-celtic { --cw: min(15.5vw, 120px, 10vh); /* 4줄이라 화면 높이에도 맞춤 */ gap: .7rem .4rem; grid-template-areas: ".  c5 .  .  c10" "c4 c1 c2 c6 c9" ".  c3 .  .  c8" ".  .  .  .  c7"; }
+.tc-slot { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.tc-pos { max-width: var(--cw); font-size: .8rem; color: var(--muted); text-align: center; }
+.tcard { width: var(--cw); aspect-ratio: 7 / 12; padding: 0; border: none; background: none; perspective: 900px; cursor: pointer; container-type: inline-size; }
+.tc-inner { position: relative; display: block; width: 100%; height: 100%; transition: transform .6s ease; transform-style: preserve-3d; }
+.tcard.open .tc-inner { transform: rotateY(180deg); }
+.tc-back, .tc-front { position: absolute; inset: 0; border-radius: 7cqi; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.tc-back { border: 1.5px solid var(--accent); box-shadow: inset 0 0 0 4cqi #232046, inset 0 0 0 5cqi var(--accent), 0 4px 10px rgba(0, 0, 0, .4);
+  background: radial-gradient(circle, var(--accent) 0 7cqi, transparent 8cqi), repeating-linear-gradient(45deg, #2B2852 0 6px, #232046 6px 12px); }
+.tcard:not(.open):hover .tc-back { filter: brightness(1.15); }
+.tc-front { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 9cqi 5cqi 10cqi; transform: rotateY(180deg);
+  border: 1.5px solid var(--accent); background: var(--card-paper); color: var(--card-ink); box-shadow: inset 0 0 0 3.5cqi var(--card-paper), inset 0 0 0 4.5cqi #C9A24A, 0 4px 10px rgba(0, 0, 0, .4); }
+.tcard.rev .tc-front { transform: rotateY(180deg) rotate(180deg); }
+.tc-mark { font-family: Georgia, "Times New Roman", serif; font-size: 13cqi; font-weight: 700; letter-spacing: .04em; }
+.tc-emoji { font-size: 40cqi; line-height: 1; }
+.tc-name { max-width: 100%; font-size: clamp(9px, 12cqi, 18px); font-weight: 700; line-height: 1.2; text-align: center; word-break: keep-all; }
+.suit-m .tc-front { background: linear-gradient(#FBF4E2, #EFE2BF); }
+
+/* 4. 읽기 */
+.tarot-read p { margin: 0; line-height: 1.7; }
+.ai-text { white-space: pre-wrap; line-height: 1.75; }
+.ai-text:empty::before { content: "카드를 읽고 있어요…"; color: var(--muted); }
+.ai-err { margin: 0; color: var(--danger); font-weight: 600; }
+.tarot-ai > .btn.primary { align-self: flex-start; }
+.tarot-again { justify-content: center; }
+
+/* 창 */
+#cardDlg, #keyDlg { width: min(440px, calc(100vw - 32px)); }
+#cardBody p { margin: .5rem 0; line-height: 1.6; }
+.card-now { padding: .6rem .8rem; border-radius: 10px; background: var(--accent-soft); }
+#keyDlg form { display: flex; flex-direction: column; gap: .6rem; }
+#keyDlg .hint { margin: 0; line-height: 1.55; }
+#keyClear { margin-right: auto; }
+@media (max-width: 480px) { .spread-seg { grid-template-columns: repeat(2, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .deck.deal .dk { animation: none; } .deck .dk, .tc-inner { transition: none; } }
