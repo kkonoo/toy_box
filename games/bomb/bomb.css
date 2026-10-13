@@ -1,0 +1,37 @@
+/* 폭탄 돌리기 (폰 기준): 가운데에 큰 💣, 돌리는 중엔 머리 줄 단추를 숨겨 넘기다 잘못 누르지 않게 */
+main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.1rem; min-height: calc(100dvh - 4.5rem); text-align: center; }
+.bomb-face { position: relative; font-size: clamp(7rem, 42vw, 11rem); line-height: 1; user-select: none; }
+.bomb-lead { margin: 0; font-size: 1.15rem; font-weight: 600; white-space: pre-line; }
+.fuse-seg { width: 100%; }
+.fuse-seg button { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .5rem .4rem; }
+.fuse-seg small { font-size: .75rem; color: var(--muted); }
+main > .hint { margin: 0; max-width: 22rem; }
+
+/* 돌리는 중: 째깍마다 살짝 흔들리고 뒤가 은은하게 빛남 */
+body[data-phase="run"] .game-head a, body[data-phase="run"] .head-end { visibility: hidden; }
+body[data-phase="run"] main { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.bomb-face.lit::before { content: ""; position: absolute; inset: 15%; z-index: -1; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--danger) 35%, transparent), transparent 70%); animation: glow 1s ease-in-out infinite alternate; }
+.bomb-face.tick { animation: tick .3s ease-out; }
+.bomb-pass { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; }
+.stop-btn { position: relative; overflow: hidden; margin-top: 2rem; padding: .6rem 1.2rem; color: var(--muted); touch-action: none; }
+.stop-btn span { position: relative; }
+.stop-btn::before { content: ""; position: absolute; inset: 0; width: 0; background: var(--accent-soft); }
+.stop-btn.holding::before { width: 100%; transition: width 1s linear; }
+@keyframes tick { 30% { transform: rotate(-6deg) scale(1.04); } 60% { transform: rotate(4deg); } }
+@keyframes glow { from { opacity: .5; transform: scale(.92); } to { opacity: 1; transform: scale(1.08); } }
+
+/* 펑: 화면이 번쩍이고 흔들린 뒤 빨간 화면 */
+body[data-phase="boom"] { background: #D7263D; color: #fff; animation: flash .6s ease-out; }
+body[data-phase="boom"] .game-head .icon-btn, body[data-phase="boom"] .game-head .btn { color: #fff; background: transparent; border-color: rgba(255, 255, 255, .5); }
+body[data-phase="boom"] main { animation: shake .5s; }
+.boom-face { font-size: clamp(8rem, 50vw, 13rem); line-height: 1; animation: blast .5s cubic-bezier(.2, 1.6, .4, 1); }
+.boom-text { margin: 0; font-size: 3.2rem; font-weight: 900; letter-spacing: -0.02em; }
+.boom-sub { margin: 0; font-size: 1.2rem; font-weight: 600; }
+.again-btn { margin-top: 1rem; background: #fff; border-color: #fff; color: #D7263D; font-weight: 700; }
+.again-btn:hover { background: #fff; }
+@keyframes flash { 0% { background: #fff; } 25% { background: #FFB020; } 100% { background: #D7263D; } }
+@keyframes shake { 15% { transform: translate(-10px, 4px); } 30% { transform: translate(9px, -5px); } 45% { transform: translate(-7px, 3px); } 60% { transform: translate(5px, -2px); } 80% { transform: translate(-2px, 1px); } }
+@keyframes blast { from { transform: scale(.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .bomb-face.tick, .bomb-face.lit::before, body[data-phase="boom"], body[data-phase="boom"] main, .boom-face { animation: none; }
+}
