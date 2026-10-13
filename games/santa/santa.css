@@ -1,0 +1,38 @@
+/* 시크릿 산타: 크리스마스 빨강·초록. 주최자 화면은 폰·노트북 둘 다, 개인 화면(me.html)은 폰 기준 */
+:root { --accent: #C8323C; --accent-soft: #FBE7E8; --pine: #2E7D4F; }
+@media (prefers-color-scheme: dark) { :root { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; } }
+.game-head h1 { color: var(--accent); }
+
+/* 주최자 */
+body:not(.me) main { max-width: 680px; }
+.santa-panel { gap: .7rem; }
+.santa-panel h2 { margin: 0; font-size: 1.15rem; }
+.santa-panel .big { align-self: center; }
+.santa-panel > .hint { margin: 0; line-height: 1.55; }
+.santa-info { margin: 0; font-size: .9rem; color: var(--muted); }
+.santa-info.warn { color: var(--accent); font-weight: 600; }
+.santa-list { display: flex; flex-direction: column; gap: 1px; margin: .2rem 0; padding: 0; list-style: none; }
+.santa-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; padding: .55rem .4rem; border-bottom: 1px solid var(--line); }
+.santa-name { flex: 1; min-width: 6rem; font-weight: 600; overflow-wrap: anywhere; }
+.santa-list li.done .santa-name::after { content: " ✓"; color: var(--pine); }
+.santa-btns { display: flex; gap: .3rem; }
+#qr { width: min(440px, calc(100vw - 32px)); text-align: center; }
+#qr h2 { font-size: 1.3rem; }
+.qr { display: block; width: min(100%, 60vh); margin: 0 auto; border-radius: 8px; }
+#qr .hint { margin: .7rem 0 0; }
+
+/* 개인 화면 */
+.me main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: calc(100dvh - 4.5rem); text-align: center; }
+.me-draw { margin: 0; font-size: .85rem; color: var(--muted); }
+.me-hello { margin: 0; font-size: 1.3rem; font-weight: 700; }
+.me-gift { display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: 1.2rem 2rem; border: 2px dashed color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 24px; background: var(--surface); font-size: 6rem; line-height: 1; cursor: pointer; }
+.me-gift .me-box { animation: wiggle 2.4s ease-in-out infinite; }
+.me-tap { font-size: 1rem; font-weight: 700; color: var(--accent); }
+.me-result { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: 1.4rem 1.6rem; border-radius: 24px; background: var(--accent-soft); animation: reveal .35s cubic-bezier(.2, 1.4, .4, 1); }
+.me-result p { margin: 0; }
+.me-name { font-size: clamp(2.2rem, 12vw, 3.2rem); font-weight: 800; letter-spacing: -0.02em; color: var(--accent); overflow-wrap: anywhere; }
+.me-tree { font-size: 2rem; }
+.me main > .hint { margin: 0; max-width: 20rem; }
+@keyframes wiggle { 0%, 70%, 100% { transform: none; } 78% { transform: rotate(-8deg); } 86% { transform: rotate(7deg); } 94% { transform: rotate(-3deg); } }
+@keyframes reveal { from { transform: scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .me-gift .me-box, .me-result { animation: none; } }
