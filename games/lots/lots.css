@@ -1,0 +1,11 @@
+/* 제비뽑기: 카드 뒤집기 (뒷면 = 번호, 앞면 = 당첨·꽝). 큰 화면에선 카드도 커짐 */
+.setup-group { display: inline-flex; align-items: center; gap: .5rem; }
+/* 카드 크기는 화면 너비·높이 중 작은 쪽에 맞춤 → 프로젝터에서 30장도 한 화면에 */
+.lots { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(72px, min(8vw, 11vh), 150px), 1fr)); gap: clamp(10px, 1vw, 18px); margin: .4rem 0; }
+.lot { position: relative; aspect-ratio: 3 / 4; padding: 0; border: none; background: transparent; cursor: pointer; perspective: 600px; }
+.lot > span { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .5s; font-weight: 700; }
+.lot-back { background: var(--accent); color: var(--on-accent); font-size: clamp(1.25rem, 2.2vw, 2.4rem); box-shadow: var(--shadow); }
+.lot-front { transform: rotateY(-180deg); border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: clamp(.95rem, 1.4vw, 1.6rem); }
+.lot.open .lot-back { transform: rotateY(180deg); }
+.lot.open .lot-front { transform: rotateY(0); }
+.lot.win .lot-front { border: 2px solid var(--gold); background: color-mix(in srgb, var(--gold) 28%, var(--surface)); color: var(--text); }
