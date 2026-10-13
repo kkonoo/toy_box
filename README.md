@@ -2,6 +2,9 @@
 
 생활에서 소소하게 쓰는 놀이 도구 모음이에요. 서버·로그인 없이 GitHub Pages에 그대로 올리는 정적 사이트예요.
 
+https://kkonoo.github.io/toy_box/
+
+
 ## 게임
 
 | 게임 | 화면 | 하는 법 |
@@ -38,10 +41,6 @@ tests/              node --test
 1. `games/<이름>/` 폴더에 `index.html`을 만들어요 (다른 게임 페이지를 복사해서 시작하면 머리 줄·공용 파일이 이미 들어 있어요).
 2. 계산은 `<이름>-core.js`에 화면 없이 두고 `tests/<이름>.test.js`로 확인해요.
 3. 홈 `index.html`의 `.game-cards`에 카드 `<a>`를 하나 넣어요.
-
-## 배포
-
-리포 Settings › Pages › Build and deployment에서 **Deploy from a branch**, `main` / `(root)`를 고르면 `https://kkonoo.github.io/toy_box/`로 열려요. 모든 링크가 상대 경로라 따로 설정할 것은 없어요.
 
 ## 확인 (테스트)
 
