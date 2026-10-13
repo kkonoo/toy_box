@@ -6,6 +6,11 @@
 <title>장난감 상자</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧸</text></svg>">
 <meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="장난감 상자">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/home.css">
@@ -15,6 +20,7 @@
   <h1>🧸 장난감 상자</h1>
 </header>
 <main>
+  <div class="install-banner" id="installBanner" hidden></div>
   <p class="home-lead">소소하게 쓰는 놀이 도구 모음이에요. 하나 골라 보세요.</p>
   <!-- 게임 추가: games/<이름>/ 폴더를 만들고 여기에 카드 <a> 하나. 📱 폰 한 대로 하는 게임 / 🖥️ 큰 화면에 띄워도 좋은 게임 -->
   <nav class="game-cards">
@@ -26,5 +32,6 @@
     <a class="game-card" href="games/tarot/"><span class="emoji">🔮</span><b>타로</b><span>질문을 떠올리고 펼친 카드에서 직접 골라 한 장씩 뒤집어요</span><small>📱 폰 · 🖥️ 큰 화면 둘 다</small></a>
   </nav>
 </main>
+<script src="js/pwa.js"></script>
 </body>
 </html>
