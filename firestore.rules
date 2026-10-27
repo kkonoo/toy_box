@@ -1,0 +1,78 @@
+rules_version = '2';
+// 장난감 상자 Firestore 보안 규칙 → Firebase 콘솔 › Firestore Database › 규칙에 그대로 붙여 넣어요
+// 쓰는 곳은 투표(games/vote)뿐. 로그인 화면 없이 익명 로그인(기기마다 따로)으로 1기기 1표
+// 익명 로그인 uid는 그대로 저장하지 않고 투표마다 다르게 섞은 열쇠로만 씀 (games/vote/vote-db.js voteKey와 같은 계산)
+//   주최자 열쇠 = sha256('owner:' + uid + ':' + 투표 id), 표 열쇠 = sha256('vote:' + uid + ':' + 투표 id)
+//   → 데이터를 들여다봐도 어느 표가 주최자 것인지, 다른 투표의 누구와 같은 사람인지 알 수 없음
+// polls/{투표} · polls/{투표}/options/{항목} · polls/{투표}/votes/{표 열쇠}
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function key(kind, poll) { return hashing.sha256(kind + ':' + request.auth.uid + ':' + poll).toHexString().lower(); }
+    function pollDoc(poll) { return get(/databases/$(database)/documents/polls/$(poll)).data; }
+    function isOwner(p, poll) { return p.owner == key('owner', poll); }
+    function isOpen(p) { return !p.closed && (p.closeAt == null || request.time < p.closeAt); }
+    // 결과(모든 표) 보기: 바로 공개 · 투표한 사람만 · 마감 뒤 (vote-core.js canSeeResults와 같은 규칙)
+    function canSee(p, poll) {
+      return p.results == 'always' || !isOpen(p)
+        || (p.results == 'voted' && exists(/databases/$(database)/documents/polls/$(poll)/votes/$(key('vote', poll))));
+    }
+    function newPoll(d, poll) {
+      return d.keys().hasOnly(['title', 'kind', 'maxPick', 'anonymous', 'allowAdd', 'results', 'closeAt', 'closed', 'owner', 'createdAt'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 100
+        && d.kind in ['text', 'date']
+        && d.maxPick is int && d.maxPick >= 0 && d.maxPick <= 50
+        && d.anonymous is bool && d.allowAdd is bool
+        && d.results in ['always', 'voted', 'closed']
+        && (d.closeAt == null || d.closeAt is timestamp)
+        && d.closed == false
+        && d.owner == key('owner', poll)
+        && d.createdAt == request.time;
+    }
+    // 항목: 주최자(만들 때 한 번에 넣는 것 포함)나, '항목 추가'를 켠 투표면 누구나. 열려 있을 때만
+    // 날짜 투표는 'YYYY-MM-DD' 또는 'YYYY-MM-DD HH:MM'
+    function newOption(d, p, poll) {
+      return d.keys().hasOnly(['text', 'at'])
+        && d.text is string && d.text.size() > 0 && d.text.size() <= 60
+        && (p.kind == 'text' || d.text.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2})?'))
+        && d.at == request.time
+        && isOpen(p) && (isOwner(p, poll) || p.allowAdd);
+    }
+    // 표: 고른 항목 1개 이상, 최대 개수(0 = 제한 없음, 그래도 50개까지). 익명이면 이름을 아예 안 받음
+    function newVote(d, p) {
+      return d.keys().hasOnly(['picks', 'name', 'at'])
+        && d.picks is list && d.picks.size() > 0 && d.picks.size() <= (p.maxPick == 0 ? 50 : p.maxPick)
+        && (p.anonymous ? !('name' in d) : (d.name is string && d.name.size() > 0 && d.name.size() <= 20))
+        && d.at == request.time
+        && isOpen(p);
+    }
+
+    match /polls/{poll} {
+      allow get: if signedIn(); // 링크(투표 id)를 아는 사람만 — 목록은 못 봄
+      allow create: if signedIn() && newPoll(request.resource.data, poll);
+      // 주최자만: 마감·다시 열기
+      allow update: if signedIn() && isOwner(resource.data, poll)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed', 'closeAt'])
+        && request.resource.data.closed is bool
+        && (request.resource.data.closeAt == null || request.resource.data.closeAt is timestamp);
+      allow delete: if signedIn() && isOwner(resource.data, poll);
+
+      match /options/{opt} {
+        allow read: if signedIn();
+        // 만들 때는 투표와 같이 한 번에 쓰므로 getAfter (쓴 뒤의 투표를 봄)
+        allow create: if signedIn() && newOption(request.resource.data, getAfter(/databases/$(database)/documents/polls/$(poll)).data, poll);
+        allow delete: if signedIn() && isOwner(pollDoc(poll), poll);
+      }
+
+      match /votes/{voter} {
+        allow get: if signedIn() && (voter == key('vote', poll) || canSee(pollDoc(poll), poll));
+        allow list: if signedIn() && canSee(pollDoc(poll), poll);
+        allow create, update: if signedIn() && voter == key('vote', poll) && newVote(request.resource.data, pollDoc(poll));
+        // 내 표 취소는 열려 있을 때, 주최자는 투표를 지울 때 마감한 뒤 한꺼번에
+        allow delete: if signedIn() && (
+          (voter == key('vote', poll) && isOpen(pollDoc(poll)))
+          || (isOwner(pollDoc(poll), poll) && !isOpen(pollDoc(poll))));
+      }
+    }
+  }
+}

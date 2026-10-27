@@ -1,0 +1,79 @@
+/* 투표: 폰에서 누르기 좋은 큼직한 항목 줄, 결과는 줄 뒤에 차오르는 막대 */
+main { max-width: 640px; }
+.vote-panel { gap: .8rem; margin-bottom: 1rem; }
+.vote-panel h2 { margin: 0; font-size: 1.15rem; }
+.vote-panel > .hint, .vote-field > .hint { margin: 0; line-height: 1.55; }
+.vote-panel > .big { align-self: center; }
+.vote-wait { color: var(--muted); text-align: center; }
+.vote-field { display: flex; flex-direction: column; align-items: flex-start; gap: .45rem; }
+.vote-field > b { font-size: .9rem; }
+.vote-field > .text-input, .vote-field > textarea, .vote-field > .vote-field, .vote-adder { align-self: stretch; }
+.vote-sub { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; }
+.vote-select { width: auto; padding-block: .35rem; }
+.vote-when { width: auto; }
+.vote-info { margin: 0; font-size: .9rem; color: var(--muted); }
+.check { display: flex; align-items: center; gap: .5rem; font-size: .95rem; cursor: pointer; }
+.check input { flex: none; width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); }
+
+/* 항목 넣는 칸 · 고른 날짜 목록 */
+.vote-adder { display: flex; gap: .4rem; }
+.vote-adder .text-input { flex: 1; min-width: 0; }
+.vote-adder .vote-time { flex: 0 1 8.5rem; }
+.vote-dates { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.vote-dates:empty { display: none; }
+.vote-dates li { display: flex; align-items: center; gap: .1rem; padding: .15rem .2rem .15rem .75rem; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); font-size: .9rem; }
+
+/* 투표 머리 */
+.vote-head { display: flex; flex-direction: column; gap: .5rem; }
+.vote-panel .vote-title { font-size: 1.35rem; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.vote-chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+.vote-chips span { padding: .15rem .6rem; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); font-size: .8rem; color: var(--muted); }
+
+/* 항목 줄: 동그라미(하나만)·네모(여러 개) 표시, 결과는 --fill 만큼 차오르는 막대 */
+.opts { display: flex; flex-direction: column; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.opt-row { display: flex; align-items: center; gap: .25rem; }
+.opt {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-width: 0;
+  min-height: 3.1rem;
+  padding: .55rem .9rem;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+.opt::before { content: ""; position: absolute; inset: 0; z-index: -1; width: var(--fill, 0%); background: var(--accent-soft); transition: width .4s; }
+.opt:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.opt.on { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt-mark { flex: none; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; border: 2px solid var(--faint); border-radius: 6px; font-size: .8rem; font-weight: 800; color: var(--on-accent); }
+.opt.one .opt-mark { border-radius: 50%; }
+.opt.on .opt-mark { border-color: var(--accent); background: var(--accent); }
+.opt.on .opt-mark::after { content: "✓"; }
+.opt-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.opt-text { font-weight: 600; overflow-wrap: anywhere; }
+.opt-names { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.opt-count { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); }
+.opt.top .opt-count { color: var(--accent); }
+.opt.top .opt-count::before { content: "👑 "; }
+.vote-btns { display: flex; flex-direction: column; gap: .5rem; }
+.vote-status { margin: 0; font-size: .9rem; color: var(--muted); white-space: pre-line; }
+
+/* 이 기기에서 연 투표 */
+.vote-recent { margin: 0; padding: 0; list-style: none; }
+.vote-recent li { display: flex; align-items: center; gap: .4rem; padding: .45rem .2rem; border-bottom: 1px solid var(--line); }
+.vote-recent a { flex: 1; min-width: 0; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.vote-recent a:hover { color: var(--accent); }
+
+#qr { width: min(440px, calc(100vw - 32px)); text-align: center; }
+#qr h2 { font-size: 1.2rem; overflow-wrap: anywhere; }
+.qr { display: block; width: min(100%, 60vh); margin: 0 auto; border-radius: 8px; }
+#qr .hint { margin: .7rem 0 0; }
+@media (prefers-reduced-motion: reduce) { .opt::before { transition: none; } }

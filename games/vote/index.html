@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko" class="big">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투표 · 장난감 상자</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="장난감 상자">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../../css/base.css">
+<link rel="stylesheet" href="vote.css">
+</head>
+<body>
+<header class="game-head">
+  <a class="icon-btn" href="../../" title="처음으로">‹</a>
+  <h1>🗳️ 투표</h1>
+  <span class="head-end"><a class="btn small" href="#" id="newBtn" hidden>＋ 새 투표</a></span>
+</header>
+<main id="app"></main>
+
+<dialog id="qr">
+  <h2 id="qrTitle"></h2>
+  <div id="qrBox"></div>
+  <p class="hint">폰 카메라로 찍으면 투표가 열려요.</p>
+  <div class="dialog-actions"><button type="button" class="btn" id="qrClose">닫기</button></div>
+</dialog>
+
+<script src="../../js/ui.js"></script>
+<script src="../../vendor/qrcode.js"></script>
+<script src="../../js/firebase-config.js"></script>
+<script src="vote-core.js"></script>
+<script src="vote-db.js"></script>
+<script src="vote.js"></script>
+<script src="../../js/pwa.js"></script>
+</body>
+</html>
