@@ -115,7 +115,7 @@ function createPanel() {
   if (draft.deadline) deadline.append(when);
 
   panel.append(h('h2', '', '새 투표'), field('질문', title), field('항목', kind, items),
-    field('고르기', pick, checkbox('🙈 익명 투표 — 누가 무엇을 골랐는지 아무도 몰라요 (만든 사람도)', draft.anonymous, v => { draft.anonymous = v; }),
+    field('고르기', pick, checkbox('🙈 익명 투표', draft.anonymous, v => { draft.anonymous = v; }),
       checkbox('＋ 다른 사람도 항목 추가', draft.allowAdd, v => { draft.allowAdd = v; check(); })),
     field('결과 공개', results, h('p', 'hint', { always: '투표하기 전에도 결과가 보여요.', voted: '자기 표를 낸 사람만 결과를 봐요.', closed: '마감 시간이 되거나 만든 사람이 마감하면 모두에게 공개돼요.' }[draft.results])),
     field('마감', deadline), info, go);
