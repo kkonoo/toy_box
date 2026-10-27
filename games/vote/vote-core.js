@@ -36,6 +36,12 @@ function whenLabel(text, now = Date.now()) {
   if (m[4] != null) { const hh = +m[4]; s += ` ${hh < 12 ? '오전' : '오후'} ${hh % 12 || 12}:${m[5]}`; }
   return s;
 }
+// 달력 한 달: 'YYYY-MM' → 일요일부터 맞춘 앞 빈칸('')과 그달 날짜들('YYYY-MM-DD')
+function monthDays(ym) {
+  const [y, m] = ym.split('-').map(Number), first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), n = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return [...Array(first).fill(''), ...Array.from({ length: n }, (_, i) => `${ym}-${pad(i + 1)}`)];
+}
+const addMonth = (ym, k) => { const d = new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5) - 1 + k, 1)); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}`; };
 // 시각(ms) → 이 기기 시간대의 'YYYY-MM-DD HH:MM' (마감 시간 보여 주기·입력 칸)
 const whenOf = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const optionLabel = (poll, o, now) => (poll.kind === 'date' ? whenLabel(o.text, now) : o.text);

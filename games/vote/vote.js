@@ -86,13 +86,12 @@ function createPanel() {
       li.append(h('span', '', whenLabel(t)), button('✕', () => { draft.dates = draft.dates.filter(x => x !== t); redraw(); }, 'icon-btn small'));
       list.append(li);
     }
-    const add = dateAdder(t => {
-      if (draft.dates.includes(t)) return toast('이미 넣은 날짜예요');
-      draft.dates = [...draft.dates, t].sort();
+    const c = dateCalendar(() => draft.dates, t => {
+      draft.dates = draft.dates.includes(t) ? draft.dates.filter(x => x !== t) : [...draft.dates, t].sort();
       redraw();
-    });
+    }, '날짜를 누르면 바로 들어가고, 다시 누르면 빠져요. 시간을 정해 두면 그 시간으로 들어가요(같은 날 시간을 바꿔 가며 여러 개).');
     items = h('div', 'vote-field');
-    items.append(list, add, h('p', 'hint', '시간은 비워 두면 날짜만 들어가요. 같은 날 시간을 여러 개 넣어도 돼요.'));
+    items.append(c.el, list); // 달력이 위: 날짜가 늘어도 달력 자리가 안 밀림
   }
 
   const pick = h('div', 'vote-sub'), max = h('select', 'text-input vote-select');
@@ -156,7 +155,7 @@ function recentPanel() {
   return panel;
 }
 
-// 항목 넣는 칸: 글 한 줄 / 날짜 + 시간(안 넣어도 됨). onAdd(글자)가 false를 돌려주면 칸을 그대로 둠
+// 글 항목 넣는 칸: onAdd(글자)가 false를 돌려주면 칸을 그대로 둠
 function textAdder(onAdd) {
   const form = h('form', 'vote-adder'), input = h('input', 'text-input'), go = h('button', 'btn', '추가');
   input.maxLength = MAX_TEXT;
@@ -169,18 +168,42 @@ function textAdder(onAdd) {
   form.append(input, go);
   return form;
 }
-function dateAdder(onAdd) {
-  const box = h('div', 'vote-adder'), date = h('input', 'text-input'), time = h('input', 'text-input vote-time');
-  date.type = 'date';
+// 달력: 날짜를 누르면 바로 onPick(글자). 시간을 정해 두면 'YYYY-MM-DD HH:MM'으로. 지난 날은 못 누름
+// picked(): 지금 들어 있는 항목 글자들 → 그 날짜에 표시. 돌려준 redraw()로 표시만 다시
+const cal = { month: '', time: '' }; // 보던 달·시간: 화면을 다시 그려도 그대로
+function dateCalendar(picked, onPick, hint) {
+  const box = h('div', 'cal'), head = h('div', 'cal-head'), title = h('b'), grid = h('div', 'cal-grid'), timeRow = h('div', 'cal-time'), time = h('input', 'text-input');
+  const today = whenOf(Date.now()).slice(0, 10), thisMonth = today.slice(0, 7);
+  if (!cal.month || cal.month < thisMonth) cal.month = thisMonth;
+  const go = k => { cal.month = addMonth(cal.month, k); draw(); };
+  const prev = button('‹', () => go(-1), 'icon-btn small'), next = button('›', () => go(1), 'icon-btn small');
+  prev.title = '이전 달';
+  next.title = '다음 달';
+  const clear = button('✕', () => { time.value = cal.time = ''; clear.hidden = true; }, 'icon-btn small');
+  clear.title = '시간 빼기';
   time.type = 'time';
-  date.setAttribute('aria-label', '날짜');
-  time.setAttribute('aria-label', '시간 (안 넣어도 돼요)');
-  box.append(date, time, button('추가', () => {
-    const t = whenText(date.value, time.value);
-    if (!t) toast(date.value ? '날짜와 시간을 다시 확인해 주세요' : '날짜를 골라 주세요');
-    else onAdd(t);
-  }, 'btn'));
-  return box;
+  time.value = cal.time;
+  time.setAttribute('aria-label', '시간');
+  clear.hidden = !cal.time;
+  time.addEventListener('input', () => { cal.time = time.value; clear.hidden = !time.value; });
+  function draw() {
+    const days = new Set(picked().map(t => t.slice(0, 10)));
+    title.textContent = `${+cal.month.slice(0, 4)}년 ${+cal.month.slice(5)}월`;
+    prev.disabled = cal.month <= thisMonth;
+    grid.replaceChildren(...[...WEEK].map((w, i) => h('span', `cal-wd${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}`, w)), ...monthDays(cal.month).map((d, i) => {
+      if (!d) return h('span');
+      const b = button(String(+d.slice(8)), () => onPick(whenText(d, cal.time)),
+        `cal-day${days.has(d) ? ' on' : ''}${d === today ? ' today' : ''}${i % 7 === 0 ? ' sun' : i % 7 === 6 ? ' sat' : ''}`);
+      b.disabled = d < today;
+      b.setAttribute('aria-label', whenLabel(d));
+      return b;
+    }));
+  }
+  head.append(prev, title, next);
+  timeRow.append(h('span', '', '🕒 시간'), time, clear);
+  box.append(head, grid, timeRow, h('p', 'hint', hint));
+  draw();
+  return { el: box, redraw: draw };
 }
 
 // ---------- 2. 투표 보기 ----------
@@ -260,6 +283,7 @@ function paint(v) {
   $('vOpts').replaceChildren(...rows);
   if (!rows.length) $('vOpts').append(h('li', 'hint', '아직 항목이 없어요. 아래에서 넣어 주세요.'));
   $('vAdd').hidden = closed || !(p.allowAdd || p.isOwner) || v.options.length >= MAX_OPTIONS;
+  v.cal?.redraw(); // 달력에 들어 있는 날짜 표시
   $('vName').hidden = closed || p.anonymous;
 
   // 단추와 알림 (한 줄에 하나)
@@ -291,7 +315,12 @@ function build(v) {
   const p = v.poll, main = h('section', 'panel vote-panel'), add = h('div', 'vote-add'), nameRow = h('div', 'vote-field'), name = h('input', 'text-input');
   const ids = { vHead: h('div', 'vote-head'), vOpts: h('ul', 'opts'), vAdd: add, vName: nameRow, vBtns: h('div', 'vote-btns'), vOwner: h('section', 'panel vote-panel') };
   for (const [id, el] of Object.entries(ids)) el.id = id;
-  add.append(p.kind === 'date' ? dateAdder(t => addOption(v, t)) : textAdder(t => addOption(v, t)));
+  if (p.kind === 'date') { // 달력은 크니까 눌러야 펼침
+    const more = h('details', 'cal-more');
+    v.cal = dateCalendar(() => v.options.map(o => o.text), t => addOption(v, t), '날짜를 누르면 바로 들어가요. 시간을 정해 두면 그 시간으로 들어가요.');
+    more.append(h('summary', 'btn', '＋ 날짜 넣기'), v.cal.el);
+    add.append(more);
+  } else add.append(textAdder(t => addOption(v, t)));
   name.id = 'vNameInput';
   name.maxLength = MAX_NAME;
   name.placeholder = '다른 사람에게 보일 이름';

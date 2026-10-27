@@ -29,6 +29,19 @@ test('날짜 이름: 요일·오전 오후, 올해가 아니면 연도', () => {
   assert.equal(P.whenOf(new Date(2026, 10, 3, 9, 5).getTime()), '2026-11-03 09:05');
 });
 
+test('달력: 일요일부터 빈칸, 달 넘기기', () => {
+  const nov = P.monthDays('2026-11'); // 11월 1일은 일요일
+  assert.equal(nov.length, 30);
+  assert.equal(nov[0], '2026-11-01');
+  const oct = P.monthDays('2026-10'); // 10월 1일은 목요일 → 빈칸 4개
+  assert.deepEqual([...oct.slice(0, 5)], ['', '', '', '', '2026-10-01']);
+  assert.equal(oct.at(-1), '2026-10-31');
+  assert.equal(P.monthDays('2028-02').filter(Boolean).length, 29);
+  assert.equal(P.addMonth('2026-12', 1), '2027-01');
+  assert.equal(P.addMonth('2026-01', -1), '2025-12');
+  assert.equal(P.addMonth('2026-10', 0), '2026-10');
+});
+
 test('항목 순서: 날짜는 이른 날부터, 글은 올린 순서', () => {
   const ids = list => list.map(o => o.id).join(',');
   const dates = [{ id: 'a', text: '2026-11-04', at: 1 }, { id: 'b', text: '2026-11-03 19:00', at: 2 }, { id: 'c', text: '2026-11-03', at: 3 }];

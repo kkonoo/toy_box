@@ -18,10 +18,29 @@ main { max-width: 640px; }
 /* 항목 넣는 칸 · 고른 날짜 목록 */
 .vote-adder { display: flex; gap: .4rem; }
 .vote-adder .text-input { flex: 1; min-width: 0; }
-.vote-adder .vote-time { flex: 0 1 8.5rem; }
 .vote-dates { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
 .vote-dates:empty { display: none; }
 .vote-dates li { display: flex; align-items: center; gap: .1rem; padding: .15rem .2rem .15rem .75rem; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); font-size: .9rem; }
+
+/* 달력 (날짜 투표): 누르면 바로 넣기, 넣은 날은 색칠 */
+.cal { align-self: stretch; display: flex; flex-direction: column; gap: .4rem; max-width: 24rem; --sun: var(--danger); --sat: #3D63DD; }
+@media (prefers-color-scheme: dark) { .cal { --sat: #7FA2FF; } }
+.cal-head { display: flex; align-items: center; justify-content: space-between; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-wd { padding: .15rem 0; font-size: .75rem; color: var(--muted); }
+.cal-day { aspect-ratio: 1; min-height: 2.2rem; border: none; border-radius: 50%; background: transparent; font-size: .95rem; font-variant-numeric: tabular-nums; cursor: pointer; }
+.cal-day:hover:not(:disabled) { background: var(--surface-2); }
+.cal .sun { color: var(--sun); }
+.cal .sat { color: var(--sat); }
+.cal-day.today { box-shadow: inset 0 0 0 1.5px var(--faint); }
+.cal .cal-day.on { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.cal .cal-day:disabled { color: var(--faint); cursor: default; }
+.cal-time { display: flex; align-items: center; gap: .4rem; font-size: .9rem; }
+.cal-time .text-input { width: auto; padding-block: .35rem; }
+.cal .hint { margin: 0; }
+.cal-more > summary { display: inline-block; list-style: none; }
+.cal-more > summary::-webkit-details-marker { display: none; }
+.cal-more[open] > summary { margin-bottom: .6rem; }
 
 /* 투표 머리 */
 .vote-head { display: flex; flex-direction: column; gap: .5rem; }
