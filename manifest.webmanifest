@@ -2,7 +2,7 @@
   "id": "/toy_box/",
   "name": "장난감 상자",
   "short_name": "장난감 상자",
-  "description": "제비뽑기 · 룰렛 · 사다리타기 · 폭탄 돌리기 · 시크릿 산타 · 타로 · 투표",
+  "description": "제비뽑기 · 룰렛 · 사다리타기 · 폭탄 돌리기 · 타로 · 시크릿 산타 · 투표",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
