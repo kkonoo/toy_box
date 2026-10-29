@@ -22,6 +22,7 @@ body[data-phase="run"] main { user-select: none; -webkit-user-select: none; -web
 
 /* 펑: 화면이 번쩍이고 흔들린 뒤 빨간 화면 */
 body[data-phase="boom"] { background: #D7263D; color: #fff; animation: flash .6s ease-out; }
+body[data-phase="boom"] .game-head { border-color: rgba(255, 255, 255, .3); background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
 body[data-phase="boom"] .game-head .icon-btn, body[data-phase="boom"] .game-head .btn { color: #fff; background: transparent; border-color: rgba(255, 255, 255, .5); }
 body[data-phase="boom"] main { animation: shake .5s; }
 .boom-face { font-size: clamp(8rem, 50vw, 13rem); line-height: 1; animation: blast .5s cubic-bezier(.2, 1.6, .4, 1); }

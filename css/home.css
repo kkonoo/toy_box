@@ -1,24 +1,85 @@
-/* 홈: 게임 카드 */
-.home-lead { margin: 0 0 1.2rem; color: var(--muted); }
-.game-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+/* 홈: 진한 머리 띠 + 게임 카드 (halab-site · lab-wiki 첫 화면 틀) */
+.home-brand { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+
+/* 머리 띠: 라이트/다크와 상관없이 같은 남색 */
+.home-hero {
+  --deep: #15163A; --deep-2: #1C1E4D; --glow: #3D41A8; --hi: #C3C5FF;
+  position: relative;
+  overflow: hidden;
+  padding: 3.5rem max(1.5rem, calc((100% - 1400px) / 2 + 1.5rem)) 3.25rem;
+  background:
+    radial-gradient(900px 480px at 85% 10%, var(--glow) 0%, transparent 62%),
+    linear-gradient(160deg, var(--deep) 0%, var(--deep-2) 100%);
+  color: #fff;
+}
+.home-hero-in { position: relative; z-index: 1; max-width: 46rem; }
+.eyebrow { margin: 0 0 .75rem; color: var(--hi); font-size: .85rem; font-weight: 700; letter-spacing: .04em; }
+.home-hero h1 { margin: 0; font-size: clamp(1.85rem, 4.4vw, 3.2rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; }
+.home-hero h1 em { font-style: normal; color: var(--hi); }
+.home-hero .lead { max-width: 40em; margin: 1rem 0 0; color: rgba(255, 255, 255, .78); font-size: 1.05rem; line-height: 1.7; }
+.home-hero-art {
+  position: absolute;
+  top: 50%;
+  right: max(1.5rem, calc((100% - 1400px) / 2 + 4rem));
+  font-size: 9rem;
+  line-height: 1;
+  transform: translateY(-50%) rotate(-8deg);
+  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .35));
+  user-select: none;
+}
+main { padding-top: 2rem; }
+
+/* 게임 카드: 평소엔 얇은 선, 올리면 선이 강조색으로 바뀌고 살짝 뜸 */
+.game-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: 1rem; }
 .game-card {
   display: flex;
   flex-direction: column;
   gap: .3rem;
-  padding: 1.3rem 1.3rem 1.1rem;
+  padding: 1.35rem 1.35rem 1.1rem;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--surface);
-  box-shadow: var(--shadow);
   text-decoration: none;
-  transition: transform .15s, border-color .15s;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
 }
-.game-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-.game-card .emoji { font-size: 3rem; line-height: 1.1; }
-.game-card b { margin-top: .3rem; font-size: 1.25rem; letter-spacing: -0.01em; }
+.game-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: var(--shadow); }
+.game-card .emoji { display: grid; place-items: center; width: 3.6rem; height: 3.6rem; margin-bottom: .6rem; border-radius: 14px; background: var(--bg); font-size: 2.1rem; line-height: 1; }
+.game-card b { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
 .game-card span { color: var(--muted); font-size: .9rem; }
-.game-card small { margin-top: auto; padding-top: .6rem; font-size: .8rem; color: var(--muted); }
+.game-card small { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .9rem; font-size: .8rem; color: var(--muted); }
+.game-card small::after { content: "→"; font-size: 1rem; color: var(--faint); transition: transform .15s, color .15s; }
+.game-card:hover small::after { color: var(--accent); transform: translateX(3px); }
+
 /* 앱 설치 배너 (js/pwa.js) */
 .install-banner { display: flex; align-items: center; gap: .4rem; margin: 0 0 1rem; padding: .25rem .4rem .25rem .25rem; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: 12px; background: var(--accent-soft); }
 .banner-go { flex: 1; padding: .5rem .6rem; border: none; background: transparent; text-align: left; font-size: .95rem; font-weight: 600; word-break: keep-all; }
 button.banner-go { cursor: pointer; }
+
+.home-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding: 1.25rem max(1.5rem, calc((100% - 1400px) / 2 + 1.5rem)) 2rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .85rem;
+}
+.home-foot a { text-decoration: none; }
+.home-foot a:hover { color: var(--accent); }
+
+@media (max-width: 900px) {
+  .home-hero { padding: 2.25rem 1rem 2rem; }
+  .home-hero .lead { font-size: 1rem; }
+  main { padding-top: 1.25rem; }
+  .home-foot { padding-inline: 1rem; }
+}
+@media (max-width: 760px) { .home-hero-art { display: none; } }
+/* 폰: 카드를 가로로 (그림 왼쪽, 글 오른쪽) 눕혀서 한 화면에 더 많이 */
+@media (max-width: 560px) {
+  .game-cards { gap: .6rem; }
+  .game-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .15rem .9rem; padding: 1rem 1.1rem; }
+  .game-card .emoji { grid-row: span 3; width: 3.2rem; height: 3.2rem; margin: 0; font-size: 1.8rem; }
+  .game-card b { font-size: 1.1rem; }
+  .game-card small { padding-top: .35rem; }
+}
