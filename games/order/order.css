@@ -1,0 +1,50 @@
+/* 주문 모으기: 폰을 넘겨 가며 누르기 좋은 큼직한 메뉴 줄, 개수는 바를 정(正) + 숫자 */
+main { max-width: 640px; }
+.order-panel { gap: .8rem; }
+.order-panel h2 { margin: 0; font-size: 1.05rem; }
+.order-panel > .hint { margin: 0; line-height: 1.55; }
+.order-panel > .big { align-self: center; }
+.order-photo { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; }
+.order-note { margin: 0; font-size: .9rem; color: var(--muted); }
+.order-note.err { color: var(--danger); font-weight: 600; }
+
+/* 세기 */
+.order-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+.order-total { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.order-list { display: flex; flex-direction: column; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.order-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .3rem .75rem;
+  padding: .7rem .8rem .7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color .15s, background .15s;
+}
+.order-row.has { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface)); }
+.order-name { font-size: 1.05rem; overflow-wrap: anywhere; }
+.order-n { min-width: 2ch; font-size: 1.5rem; font-weight: 800; line-height: 1; text-align: right; font-variant-numeric: tabular-nums; color: var(--faint); }
+.order-row.has .order-n { color: var(--accent); }
+.order-btns { display: flex; gap: .35rem; }
+.order-btns .btn { padding: .55rem .85rem; }
+.order-empty { padding: 1.5rem 1rem; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); text-align: center; }
+
+/* 바를 정: 正 한 자 = 다섯 개. 새로 그은 획은 그려지듯 */
+.tally { display: flex; flex-wrap: wrap; gap: .2rem; min-height: 1.6rem; }
+.tally svg { width: 1.6rem; height: 1.6rem; fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; }
+.tally .new { stroke-dasharray: 1; animation: stroke .25s ease-out both; }
+@keyframes stroke { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+.order-adder { display: flex; gap: .4rem; }
+.order-adder .text-input { flex: 1; min-width: 0; }
+
+/* 키 창 (타로와 같은 모양) */
+#keyDlg { width: min(440px, calc(100vw - 32px)); }
+#keyDlg form { display: flex; flex-direction: column; gap: .6rem; }
+#keyDlg .hint { margin: 0; line-height: 1.55; }
+#keyClear { margin-right: auto; }
+.check { display: flex; align-items: center; gap: .5rem; font-size: .95rem; cursor: pointer; }
+.check input { flex: none; width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .tally .new { animation: none; } .order-row { transition: none; } }

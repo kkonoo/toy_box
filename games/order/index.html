@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주문 모으기 · 장난감 상자</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="장난감 상자">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../../css/base.css">
+<link rel="stylesheet" href="order.css">
+</head>
+<body>
+<header class="game-head">
+  <a class="icon-btn" href="../../" title="처음으로">‹</a>
+  <h1>☕ 주문 모으기</h1>
+  <span class="head-end"><button type="button" class="btn small" id="keyBtn">🔑 Claude 키</button></span>
+</header>
+<main id="app"></main>
+<input type="file" id="photoInput" accept="image/*" multiple hidden>
+
+<dialog id="keyDlg">
+  <form id="keyForm">
+    <h2>📷 메뉴판 사진 읽기</h2>
+    <p class="hint">각자 가진 Claude API 키를 넣으면 메뉴판 사진에서 메뉴 이름을 뽑아 줘요. 타로에 넣은 키도 같이 써요. 키가 없어도 메뉴는 직접 적을 수 있어요.</p>
+    <input id="keyInput" class="text-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+    <label class="check"><input type="radio" name="keySave" value="device" checked> 이 기기에 저장</label>
+    <label class="check"><input type="radio" name="keySave" value="session"> 이번만 쓰기 (이 탭을 닫으면 지워져요)</label>
+    <p class="hint">키는 Claude Console(console.anthropic.com)에서 만들어요. Claude 구독과 따로 콘솔에 크레딧을 충전해야 하고, 읽을 때마다 키 주인의 크레딧이 들어요. 키는 이 브라우저에만 두고 api.anthropic.com으로만 보내지만, 이 기기를 쓰는 다른 사람도 볼 수 있어요. 여럿이 쓰는 기기라면 ‘이번만 쓰기’를 골라요.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn" id="keyClear">키 지우기</button>
+      <button type="button" class="btn" id="keyCancel">취소</button>
+      <button class="btn primary">넣기</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="../../js/ui.js"></script>
+<script src="order-core.js"></script>
+<script src="order.js"></script>
+<script src="../../js/pwa.js"></script>
+</body>
+</html>
