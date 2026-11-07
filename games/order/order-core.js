@@ -1,21 +1,42 @@
 'use strict';
 // 주문 모으기 계산 (화면 없음): order.js 가 쓰고, tests/order.test.js 가 Node에서 확인
+// 메뉴 한 줄 = 이름. 아이스·따뜻한을 나눠 셀 메뉴는 끝에 "(아이스/따뜻한)"을 붙여 둠 → 개수는 "아이스 이름"·"따뜻한 이름"으로 따로
 
 const MENU_MAX = 80; // 메뉴 줄 수 (사진을 잘못 읽어 너무 길어지지 않게)
 const NAME_MAX = 40; // 메뉴 이름 글자 수
+const TEMP_MARK = ' (아이스/따뜻한)';
+// 줄 끝의 아이스·따뜻한 표시: (아이스/따뜻한) · HOT/ICE · ICE/HOT · 핫/아이스 … 괄호는 있어도 없어도
+const TEMP_RE = /\s*[([]?\s*(?:(?:아이스|ice)\s*[/·,|]\s*(?:따뜻한|따뜻|핫|hot)|(?:따뜻한|따뜻|핫|hot)\s*[/·,|]\s*(?:아이스|ice))\s*[)\]]?\s*$/i;
 
-// 적은 글 → 메뉴 이름들: 한 줄에 하나, 앞뒤 빈칸·빈 줄·겹치는 이름 빼고
-const parseMenu = text => cleanNames(String(text).split('\n'));
-function cleanNames(list) {
+// 메뉴 한 줄 → { name, temps }: temps면 아이스·따뜻한을 나눠 셈
+function readEntry(line) {
+  const s = String(line).replace(/\s+/g, ' ').trim(), temps = TEMP_RE.test(s);
+  return { name: (temps ? s.replace(TEMP_RE, '').trim() : s).slice(0, NAME_MAX), temps };
+}
+const entryLine = ({ name, temps }) => name + (temps ? TEMP_MARK : '');
+// 메뉴 한 줄이 세는 칸들: 나누는 메뉴는 아이스·따뜻한 둘, 아니면 이름 하나
+const entryKeys = line => {
+  const { name, temps } = readEntry(line);
+  return temps ? [{ key: `아이스 ${name}`, temp: 'ice' }, { key: `따뜻한 ${name}`, temp: 'hot' }] : [{ key: name, temp: '' }];
+};
+
+// 적은 글 → 메뉴 줄들: 한 줄에 하나, 앞뒤 빈칸·빈 줄 빼고, 같은 이름은 한 번만(어느 하나라도 나누면 나눔)
+// "아메리카노 (아이스/따뜻한)"이 있으면 따로 적은 "아이스 아메리카노"·"따뜻한 아메리카노" 줄은 빼서 같은 칸을 두 번 세지 않게
+const parseMenu = text => cleanEntries(String(text).split('\n'));
+function cleanEntries(list) {
   const out = [];
   for (const v of list) {
-    const name = String(v).replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
-    if (name && !out.includes(name)) out.push(name);
+    const e = readEntry(typeof v === 'string' ? v : v.name);
+    if (typeof v !== 'string') e.temps ||= !!v.temps;
+    if (!e.name) continue;
+    const same = out.find(x => x.name === e.name);
+    if (same) same.temps ||= e.temps; else out.push(e);
   }
-  return out.slice(0, MENU_MAX);
+  const split = new Set(out.filter(e => e.temps).flatMap(e => entryKeys(entryLine(e)).map(k => k.key)));
+  return out.filter(e => e.temps || !split.has(e.name)).slice(0, MENU_MAX).map(entryLine);
 }
-// 지금 메뉴 글에 새로 읽은 이름 붙이기 (이미 있는 이름은 빼고)
-const addNames = (text, names) => cleanNames([...parseMenu(text), ...names]).join('\n');
+// 지금 메뉴 글에 새로 읽은 메뉴 붙이기 (이미 있는 이름은 빼고)
+const addNames = (text, entries) => cleanEntries([...parseMenu(text), ...entries]).join('\n');
 
 // 개수 → 바를 정(正) 획 묶음: 12 → [5, 5, 2]
 function tallyGroups(n) {
@@ -24,20 +45,21 @@ function tallyGroups(n) {
   return out;
 }
 
-// 메뉴가 바뀔 때 개수 옮기기: 남은 메뉴는 개수 그대로, 빠진 메뉴 중 개수가 있던 것은 dropped로 알려 줌
+// 메뉴가 바뀔 때 개수 옮기기: 남은 칸은 개수 그대로, 빠진 칸 중 개수가 있던 것은 dropped로 알려 줌
 function keepCounts(counts, menu) {
-  const kept = {}, dropped = [];
-  for (const [name, n] of Object.entries(counts)) {
+  const keys = menu.flatMap(line => entryKeys(line).map(k => k.key)), kept = {}, dropped = [];
+  for (const [key, n] of Object.entries(counts)) {
     if (!(n > 0)) continue;
-    if (menu.includes(name)) kept[name] = n; else dropped.push([name, n]);
+    if (keys.includes(key)) kept[key] = n; else dropped.push([key, n]);
   }
   return { counts: kept, dropped };
 }
 const totalOf = counts => Object.values(counts).reduce((s, n) => s + (n > 0 ? n : 0), 0);
+const entryTotal = (line, counts) => entryKeys(line).reduce((s, k) => s + (counts[k.key] || 0), 0);
 
-// 카운터에 보여 주거나 단톡방에 붙여 넣을 글 (메뉴 순서, 0개는 빼고)
+// 카운터에 보여 주거나 단톡방에 붙여 넣을 글 (메뉴 순서, 아이스 먼저, 0개는 빼고)
 function orderText(menu, counts) {
-  const lines = menu.filter(name => counts[name] > 0).map(name => `${name} ${counts[name]}`);
+  const lines = menu.flatMap(line => entryKeys(line)).filter(k => counts[k.key] > 0).map(k => `${k.key} ${counts[k.key]}`);
   return [`☕ 주문 (모두 ${totalOf(counts)}잔)`, ...lines].join('\n');
 }
 
@@ -48,21 +70,29 @@ function fitSize(w, h, max) {
 }
 
 // ---------- 📷 메뉴판 읽기: Claude에게 보내는 글과 받을 모양 ----------
-const MENU_PROMPT = `이 사진은 카페나 식당의 메뉴판이에요. 주문할 수 있는 메뉴 이름을 모두 뽑아 items에 넣어 주세요.
+const MENU_PROMPT = `이 사진은 카페나 식당의 메뉴판이에요. 주문할 수 있는 메뉴를 모두 뽑아 items에 넣어 주세요.
 - 메뉴판에 보이는 순서대로, 같은 메뉴는 한 번만
-- 메뉴판에 적힌 이름 그대로. 한국어와 영어가 같이 적혀 있으면 한국어 이름만
-- 가격, 용량, 설명, HOT/ICE 표시, 분류 제목(예: COFFEE, 음료, 디저트)은 빼고 메뉴 이름만
+- name은 메뉴판에 적힌 이름 그대로. 한국어와 영어가 같이 적혀 있으면 한국어 이름만
+- 가격, 용량, 설명, HOT/ICE 표시, 분류 제목(예: COFFEE, 음료, 디저트)은 name에 넣지 않기
+- hot_ice는 따뜻하게도 차갑게도 고를 수 있는 음료면 true. 메뉴판에 HOT/ICE, H/I가 적혀 있거나 가격이 두 칸이면 true. 표시가 없어도 커피·라떼·차처럼 보통 둘 다 파는 음료면 true
+- 에이드·스무디·프라페·주스처럼 차갑게만 파는 음료, 이름에 이미 아이스가 들어간 음료, 디저트·음식은 hot_ice가 false
 - 메뉴판이 아니거나 읽을 수 있는 메뉴가 없으면 빈 목록`;
 const MENU_SCHEMA = {
   type: 'object',
-  properties: { items: { type: 'array', items: { type: 'string' } } },
+  properties: {
+    items: {
+      type: 'array',
+      items: { type: 'object', properties: { name: { type: 'string' }, hot_ice: { type: 'boolean' } }, required: ['name', 'hot_ice'], additionalProperties: false },
+    },
+  },
   required: ['items'],
   additionalProperties: false,
 };
-// Claude 답(JSON 글) → 메뉴 이름들. 모양이 다르면 빈 목록
+// Claude 답(JSON 글) → 메뉴 줄들. 모양이 다른 것은 빼고, 전혀 다르면 빈 목록
 function parseMenuReply(text) {
   try {
     const items = JSON.parse(text)?.items;
-    return Array.isArray(items) ? cleanNames(items.filter(v => typeof v === 'string')) : [];
+    if (!Array.isArray(items)) return [];
+    return cleanEntries(items.filter(v => typeof v?.name === 'string').map(v => ({ name: v.name, temps: v.hot_ice === true })));
   } catch { return []; }
 }

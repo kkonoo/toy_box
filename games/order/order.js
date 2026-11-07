@@ -1,6 +1,6 @@
 'use strict';
 // 주문 모으기: 메뉴를 적거나 📷 메뉴판 사진에서 Claude가 메뉴 이름을 뽑아 목록을 만들고,
-// 폰 한 대를 테이블마다 넘기며 메뉴마다 ＋ 추가 / − 취소 → 개수는 바를 정(正)과 숫자로
+// 폰 한 대를 테이블마다 넘기며 메뉴마다 ＋ 추가 / − 취소 → 개수는 바를 정(正)과 숫자로. 커피처럼 나누는 메뉴는 🧊 아이스 · 🔥 따뜻한을 따로
 // 메뉴·개수는 이 기기에만 남아서(toybox:order) 새로 고치거나 잠깐 다른 앱에 다녀와도 그대로
 const prefs = store('order', { text: '', menu: [], counts: {}, only: false });
 // Claude 키는 타로와 같이 씀: 타로에서 넣은 키를 그대로 읽고, 여기서 넣어도 타로에서 보임
@@ -9,6 +9,7 @@ const KEY_SESSION = 'toybox:tarot-key'; // '이번만 쓰기' 키: 이 탭을 �
 const PHOTO_MAX = 6, PHOTO_EDGE = 2000; // 한 번에 읽는 사진 수, 보낼 때 줄이는 긴 쪽(px)
 // 正 쓰는 순서: 위 가로 → 가운데 세로 → 가운데 짧은 가로 → 왼쪽 세로 → 아래 가로 (20×20 칸)
 const STROKES = [[3, 3, 17, 3], [10, 3, 10, 17], [10, 10, 15, 10], [5, 10, 5, 17], [2, 17, 18, 17]];
+const TEMP_LABEL = { ice: '🧊 아이스', hot: '🔥 따뜻한' };
 let editing = false; // 메뉴 고치는 중 (메뉴가 있어도 적는 화면)
 let reading = false; // 메뉴판을 읽는 중
 let readNote = null; // 읽은 결과 한 줄 { text, err }
@@ -24,7 +25,7 @@ function menuPanel() {
   const go = button(o.menu.length ? '이 메뉴로 세기' : '주문 받기 시작', startCounting, 'btn primary big');
   ta.id = 'menuText';
   ta.rows = 10;
-  ta.placeholder = '한 줄에 메뉴 하나씩\n아이스 아메리카노\n카페라떼\n…';
+  ta.placeholder = '한 줄에 메뉴 하나씩\n아메리카노 (아이스/따뜻한)\n카페라떼 (아이스/따뜻한)\n자몽에이드\n…';
   ta.value = o.text;
   const check = () => {
     const n = parseMenu(ta.value).length;
@@ -41,6 +42,7 @@ function menuPanel() {
   photo.append(shot);
   if (readNote) photo.append(h('p', `order-note${readNote.err ? ' err' : ''}`, readNote.text));
   panel.append(head, photo, ta, info, go,
+    h('p', 'hint', '아이스와 따뜻한을 나눠 셀 메뉴는 이름 끝에 (아이스/따뜻한)을 붙여요. HOT/ICE라고 적어도 돼요.'),
     h('p', 'hint', '사진은 여러 장 골라도 돼요. 읽은 메뉴는 아래 칸에 붙으니 틀린 이름은 고쳐 주세요. 사진은 메뉴 이름을 읽는 데만 Claude에게 보내고 저장하지 않아요.'));
   if (o.menu.length) {
     const back = button('고치지 않고 돌아가기', () => { editing = false; prefs.set({ text: o.menu.join('\n') }); render(); }, 'btn');
@@ -67,9 +69,9 @@ function countPanel() {
   onlyBtn.id = 'onlyBtn';
   seg.append(button('전체 메뉴', () => { prefs.set({ only: false }); render(); }, o.only ? '' : 'on'), onlyBtn);
   top.append(total, seg);
-  const names = o.only ? o.menu.filter(name => o.counts[name] > 0) : o.menu;
-  list.append(...names.map(menuRow));
-  if (!names.length) list.append(h('li', 'order-empty', '아직 주문이 없어요'));
+  const lines = o.only ? o.menu.filter(line => entryTotal(line, o.counts) > 0) : o.menu;
+  list.append(...lines.map(menuRow));
+  if (!lines.length) list.append(h('li', 'order-empty', '아직 주문이 없어요'));
   const adder = h('form', 'order-adder'), inp = h('input', 'text-input'), add = h('button', 'btn', '＋ 넣기');
   inp.placeholder = '메뉴에 없는 것 주문하기';
   adder.append(inp, add);
@@ -82,23 +84,37 @@ function countPanel() {
   paintTotal(panel);
   return panel;
 }
-// 메뉴 한 줄: [이름 · 개수] / [正正下 · − 취소 ＋ 추가]. 누르면 이 줄과 합계만 다시 그림
-function menuRow(name) {
-  const li = h('li', 'order-row'), num = h('span', 'order-n'), marks = h('span', 'tally'), btns = h('span', 'order-btns');
-  const minus = button('− 취소', () => change(name, -1, paint), 'btn'), plus = button('＋ 추가', () => change(name, 1, paint), 'btn primary');
-  minus.setAttribute('aria-label', `${name} 하나 취소`);
-  plus.setAttribute('aria-label', `${name} 하나 추가`);
-  marks.setAttribute('aria-hidden', 'true');
-  btns.append(minus, plus);
-  li.append(h('b', 'order-name', name), num, marks, btns);
-  const paint = fresh => {
-    const n = prefs.get().counts[name] || 0;
+// 메뉴 한 줄: [이름 · 개수] 아래에 세는 칸 하나(나누는 메뉴는 🧊 아이스 · 🔥 따뜻한 둘)
+// 칸마다 [(🧊 아이스 7) 正正下 · − 취소 ＋ 추가]. 누르면 이 메뉴와 합계만 다시 그림
+function menuRow(line) {
+  const li = h('li', 'order-row'), head = h('div', 'order-head'), num = h('span', 'order-n'), keys = entryKeys(line);
+  head.append(h('b', 'order-name', readEntry(line).name), num);
+  li.append(head);
+  const painters = keys.map(({ key, temp }) => {
+    const row = h('div', `order-line${temp ? ` ${temp}` : ''}`), marks = h('span', 'tally'), sub = h('span', 'order-sub'), btns = h('span', 'order-btns');
+    const minus = button('− 취소', () => change(key, -1, paint, line), 'btn'), plus = button('＋ 추가', () => change(key, 1, paint, line), 'btn primary');
+    minus.setAttribute('aria-label', `${key} 하나 취소`);
+    plus.setAttribute('aria-label', `${key} 하나 추가`);
+    marks.setAttribute('aria-hidden', 'true');
+    btns.append(minus, plus);
+    if (temp) row.append(h('span', 'temp', TEMP_LABEL[temp]), sub);
+    row.append(marks, btns);
+    li.append(row);
+    return fresh => {
+      const n = prefs.get().counts[key] || 0;
+      row.classList.toggle('has', n > 0);
+      sub.textContent = n;
+      marks.replaceChildren(...tallyMarks(n, fresh));
+      minus.disabled = !n;
+    };
+  });
+  const paint = freshKey => {
+    painters.forEach((p, i) => p(keys[i].key === freshKey));
+    const n = entryTotal(line, prefs.get().counts);
     li.classList.toggle('has', n > 0);
     num.textContent = n;
-    marks.replaceChildren(...tallyMarks(n, fresh));
-    minus.disabled = !n;
   };
-  paint(false);
+  paint('');
   return li;
 }
 // 바를 정: 다섯 획마다 正 하나. fresh면 마지막 획이 그려지듯 나타남
@@ -114,30 +130,32 @@ function tallyMarks(n, fresh) {
     return s;
   });
 }
-function change(name, d, paint) {
-  const counts = { ...prefs.get().counts }, n = Math.max(0, (counts[name] || 0) + d);
-  if (n) counts[name] = n; else delete counts[name];
+function change(key, d, paint, line) {
+  const counts = { ...prefs.get().counts }, n = Math.max(0, (counts[key] || 0) + d);
+  if (n) counts[key] = n; else delete counts[key];
   prefs.set({ counts });
   buzz(d > 0 ? 15 : [10, 50, 10]);
-  if (prefs.get().only && !n) { render(); return; } // 주문한 것만 보기에서 0이 되면 줄을 뺌
-  paint(d > 0);
+  if (prefs.get().only && !entryTotal(line, counts)) { render(); return; } // 주문한 것만 보기에서 0이 되면 메뉴를 뺌
+  paint(d > 0 ? key : '');
   paintTotal();
 }
 function paintTotal(root = document) {
   const o = prefs.get(), total = totalOf(o.counts), find = id => root.querySelector(`#${id}`);
   find('orderTotal').textContent = `모두 ${total}잔`;
-  find('onlyBtn').textContent = `주문한 것만 ${o.menu.filter(name => o.counts[name] > 0).length}`;
+  find('onlyBtn').textContent = `주문한 것만 ${o.menu.filter(line => entryTotal(line, o.counts) > 0).length}`;
   find('copyBtn').disabled = find('clearBtn').disabled = !total;
 }
+// 메뉴에 없는 것: 메뉴 끝에 넣고 1잔 (아이스·따뜻한을 나누는 메뉴는 어느 쪽인지 몰라서 넣기만)
 function addMenu(value) {
-  const o = prefs.get(), name = parseMenu(value)[0];
-  if (!name) return;
-  if (o.menu.includes(name)) { toast('이미 있는 메뉴예요. 그 줄의 ＋ 추가를 눌러요'); return; }
+  const o = prefs.get(), line = parseMenu(value)[0];
+  if (!line) return;
+  const { name, temps } = readEntry(line);
+  if (o.menu.some(x => readEntry(x).name === name)) { toast('이미 있는 메뉴예요. 그 줄의 ＋ 추가를 눌러요'); return; }
   if (o.menu.length >= MENU_MAX) { toast(`메뉴는 ${MENU_MAX}개까지예요`); return; }
-  const menu = [...o.menu, name];
-  prefs.set({ menu, text: menu.join('\n'), counts: { ...o.counts, [name]: 1 } });
+  const menu = [...o.menu, line];
+  prefs.set({ menu, text: menu.join('\n'), counts: temps ? o.counts : { ...o.counts, [name]: 1 }, only: temps ? false : o.only }); // 0잔이라 주문한 것만 보기엔 안 보임
   render();
-  toast(`‘${name}’ 1잔 넣었어요`);
+  toast(temps ? `‘${name}’ 메뉴를 넣었어요. 아이스·따뜻한 중에 ＋ 추가를 눌러요` : `‘${name}’ 1잔 넣었어요`);
 }
 async function copyOrder() {
   const o = prefs.get(), text = orderText(o.menu, o.counts);
