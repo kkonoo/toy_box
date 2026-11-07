@@ -10,28 +10,38 @@ test('메뉴 글 → 줄: 빈 줄·앞뒤 빈칸·겹치는 이름 빼기', () =
   assert.equal(P.parseMenu('가'.repeat(100))[0].length, P.NAME_MAX);
 });
 
-test('아이스/따뜻한 표시: 여러 꼴을 알아듣고 (아이스/따뜻한)으로 맞추기', () => {
+test('온도 표시: 여러 꼴을 알아듣고 (아이스/따뜻한) · (아이스만) · (따뜻한만)으로 맞추기', () => {
   for (const s of ['아메리카노 (아이스/따뜻한)', '아메리카노 HOT/ICE', '아메리카노(ice/hot)', '아메리카노 [핫/아이스]', '아메리카노 따뜻한·아이스', '아메리카노 아이스 / 핫']) {
-    assert.deepEqual(P.readEntry(s), { name: '아메리카노', temps: true }, s);
+    assert.deepEqual(P.readEntry(s), { name: '아메리카노', temp: 'both' }, s);
     assert.deepEqual(P.parseMenu(s), ['아메리카노 (아이스/따뜻한)'], s);
   }
-  for (const s of ['아이스티', '아이스 아메리카노', '핫초코', '아이스/핫초코', '자몽에이드']) assert.equal(P.readEntry(s).temps, false, s);
-  // 같은 이름이 나눔·안 나눔으로 두 번 나오면 나눔으로 한 번만
+  for (const s of ['아인슈페너 (아이스만)', '아인슈페너 ICE ONLY', '아인슈페너(ice only)', '아인슈페너 아이스 전용', '아인슈페너 only ice']) {
+    assert.deepEqual(P.readEntry(s), { name: '아인슈페너', temp: 'ice' }, s);
+    assert.deepEqual(P.parseMenu(s), ['아인슈페너 (아이스만)'], s);
+  }
+  for (const s of ['뱅쇼 (따뜻한만)', '뱅쇼 HOT ONLY', '뱅쇼 핫 전용']) assert.deepEqual(P.parseMenu(s), ['뱅쇼 (따뜻한만)'], s);
+  for (const s of ['아이스티', '아이스 아메리카노', '핫초코', '아이스/핫초코', '자몽에이드', '아이스만두']) assert.equal(P.readEntry(s).temp, '', s);
+  // 같은 이름이 두 번 나오면 온도를 합쳐 한 번만
   assert.deepEqual(P.parseMenu('카페라떼\n카페라떼 HOT/ICE'), ['카페라떼 (아이스/따뜻한)']);
+  assert.deepEqual(P.parseMenu('라떼 (아이스만)\n라떼 (따뜻한만)'), ['라떼 (아이스/따뜻한)']);
+  assert.deepEqual(P.parseMenu('라떼\n라떼 (아이스만)'), ['라떼 (아이스만)']);
   // 나누는 메뉴가 있으면 따로 적은 아이스·따뜻한 줄은 빼서 한 칸을 두 번 세지 않음
   assert.deepEqual(P.parseMenu('아이스 아메리카노\n아메리카노 HOT/ICE\n따뜻한 아메리카노\n아이스티'), ['아메리카노 (아이스/따뜻한)', '아이스티']);
+  assert.deepEqual(P.parseMenu('아인슈페너 (아이스만)\n아이스 아인슈페너'), ['아인슈페너 (아이스만)']);
 });
 
-test('세는 칸: 나누는 메뉴는 아이스·따뜻한 둘', () => {
+test('세는 칸: 둘 다면 아이스·따뜻한, 하나만이면 그 하나', () => {
   assert.deepEqual(P.entryKeys('아메리카노 (아이스/따뜻한)'), [{ key: '아이스 아메리카노', temp: 'ice' }, { key: '따뜻한 아메리카노', temp: 'hot' }]);
+  assert.deepEqual(P.entryKeys('아인슈페너 (아이스만)'), [{ key: '아이스 아인슈페너', temp: 'ice' }]);
+  assert.deepEqual(P.entryKeys('뱅쇼 (따뜻한만)'), [{ key: '따뜻한 뱅쇼', temp: 'hot' }]);
   assert.deepEqual(P.entryKeys('자몽에이드'), [{ key: '자몽에이드', temp: '' }]);
   assert.equal(P.entryTotal('아메리카노 (아이스/따뜻한)', { '아이스 아메리카노': 3, '따뜻한 아메리카노': 2, 아메리카노: 9 }), 5);
 });
 
 test('읽은 메뉴 붙이기: 있던 메뉴 뒤에, 겹치는 건 한 번만', () => {
   assert.equal(P.addNames('아메리카노\n카페라떼', ['카페라떼', '녹차라떼']), '아메리카노\n카페라떼\n녹차라떼');
-  assert.equal(P.addNames('', [{ name: '아메리카노', temps: true }]), '아메리카노 (아이스/따뜻한)');
-  assert.equal(P.addNames('아메리카노', [{ name: '아메리카노', temps: true }]), '아메리카노 (아이스/따뜻한)');
+  assert.equal(P.addNames('', [{ name: '아메리카노', temp: 'both' }, { name: '아인슈페너', temp: 'ice' }]), '아메리카노 (아이스/따뜻한)\n아인슈페너 (아이스만)');
+  assert.equal(P.addNames('아메리카노', [{ name: '아메리카노', temp: 'both' }]), '아메리카노 (아이스/따뜻한)');
 });
 
 test('바를 정: 다섯 획씩 묶기', () => {
@@ -55,9 +65,9 @@ test('메뉴를 고치면: 남은 칸은 개수 그대로, 빠진 칸은 dropped
 });
 
 test('주문 글: 메뉴 순서대로, 아이스 먼저, 0개는 빼고, 모두 몇 잔', () => {
-  const menu = ['아메리카노 (아이스/따뜻한)', '카페라떼', '녹차라떼'];
-  assert.equal(P.orderText(menu, { 녹차라떼: 1, '따뜻한 아메리카노': 2, '아이스 아메리카노': 5, 카페라떼: 0 }),
-    '☕ 주문 (모두 8잔)\n아이스 아메리카노 5\n따뜻한 아메리카노 2\n녹차라떼 1');
+  const menu = ['아메리카노 (아이스/따뜻한)', '카페라떼', '아인슈페너 (아이스만)', '녹차라떼'];
+  assert.equal(P.orderText(menu, { 녹차라떼: 1, '따뜻한 아메리카노': 2, '아이스 아메리카노': 5, 카페라떼: 0, '아이스 아인슈페너': 3 }),
+    '☕ 주문 (모두 11잔)\n아이스 아메리카노 5\n따뜻한 아메리카노 2\n아이스 아인슈페너 3\n녹차라떼 1');
   assert.equal(P.totalOf({}), 0);
 });
 
@@ -67,11 +77,12 @@ test('사진 줄이기: 긴 쪽을 맞추고 비율 그대로, 작은 사진은 
   assert.deepEqual(P.fitSize(800, 600, 2000), [800, 600]);
 });
 
-test('Claude 답 읽기: items의 name·hot_ice만, 모양이 다르면 빼거나 빈 목록', () => {
+test('Claude 답 읽기: items의 name·temp만, 모르는 temp는 나누지 않고, 모양이 다르면 빼거나 빈 목록', () => {
   assert.deepEqual(P.parseMenuReply(JSON.stringify({ items: [
-    { name: '아메리카노', hot_ice: true }, { name: ' 자몽에이드 ', hot_ice: false }, { name: '아메리카노', hot_ice: false },
-    { name: '카페라떼 HOT/ICE', hot_ice: false }, { hot_ice: true }, '바닐라라떼',
-  ] })), ['아메리카노 (아이스/따뜻한)', '자몽에이드', '카페라떼 (아이스/따뜻한)']);
+    { name: '아메리카노', temp: 'both' }, { name: ' 자몽에이드 ', temp: 'none' }, { name: '아메리카노', temp: 'none' },
+    { name: '아인슈페너', temp: 'ice' }, { name: '뱅쇼', temp: 'hot' }, { name: '카페라떼 HOT/ICE', temp: 'none' },
+    { name: '녹차라떼', temp: 'warm' }, { temp: 'both' }, '바닐라라떼',
+  ] })), ['아메리카노 (아이스/따뜻한)', '자몽에이드', '아인슈페너 (아이스만)', '뱅쇼 (따뜻한만)', '카페라떼 (아이스/따뜻한)', '녹차라떼']);
   assert.deepEqual(P.parseMenuReply('{"items":"아메리카노"}'), []);
   assert.deepEqual(P.parseMenuReply('메뉴판이 아니에요'), []);
   assert.deepEqual(P.parseMenuReply(''), []);

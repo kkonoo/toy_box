@@ -1,6 +1,6 @@
 'use strict';
 // 주문 모으기: 메뉴를 적거나 📷 메뉴판 사진에서 Claude가 메뉴 이름을 뽑아 목록을 만들고,
-// 폰 한 대를 테이블마다 넘기며 메뉴마다 ＋ 추가 / − 취소 → 개수는 바를 정(正)과 숫자로. 커피처럼 나누는 메뉴는 🧊 아이스 · 🔥 따뜻한을 따로
+// 폰 한 대를 테이블마다 넘기며 메뉴마다 ＋ 추가 / − 취소 → 개수는 바를 정(正)과 숫자로. 커피처럼 나누는 메뉴는 🧊 아이스 · 🔥 따뜻한을 따로(하나만 되는 메뉴는 그 하나만)
 // 메뉴·개수는 이 기기에만 남아서(toybox:order) 새로 고치거나 잠깐 다른 앱에 다녀와도 그대로
 const prefs = store('order', { text: '', menu: [], counts: {}, only: false });
 // Claude 키는 타로와 같이 씀: 타로에서 넣은 키를 그대로 읽고, 여기서 넣어도 타로에서 보임
@@ -25,7 +25,7 @@ function menuPanel() {
   const go = button(o.menu.length ? '이 메뉴로 세기' : '주문 받기 시작', startCounting, 'btn primary big');
   ta.id = 'menuText';
   ta.rows = 10;
-  ta.placeholder = '한 줄에 메뉴 하나씩\n아메리카노 (아이스/따뜻한)\n카페라떼 (아이스/따뜻한)\n자몽에이드\n…';
+  ta.placeholder = '한 줄에 메뉴 하나씩\n아메리카노 (아이스/따뜻한)\n아인슈페너 (아이스만)\n자몽에이드\n…';
   ta.value = o.text;
   const check = () => {
     const n = parseMenu(ta.value).length;
@@ -42,7 +42,7 @@ function menuPanel() {
   photo.append(shot);
   if (readNote) photo.append(h('p', `order-note${readNote.err ? ' err' : ''}`, readNote.text));
   panel.append(head, photo, ta, info, go,
-    h('p', 'hint', '아이스와 따뜻한을 나눠 셀 메뉴는 이름 끝에 (아이스/따뜻한)을 붙여요. HOT/ICE라고 적어도 돼요.'),
+    h('p', 'hint', '아이스와 따뜻한을 나눠 셀 메뉴는 이름 끝에 (아이스/따뜻한), 하나만 되는 메뉴는 (아이스만)이나 (따뜻한만)을 붙여요. HOT/ICE, ICE ONLY라고 적어도 돼요.'),
     h('p', 'hint', '사진은 여러 장 골라도 돼요. 읽은 메뉴는 아래 칸에 붙으니 틀린 이름은 고쳐 주세요. 사진은 메뉴 이름을 읽는 데만 Claude에게 보내고 저장하지 않아요.'));
   if (o.menu.length) {
     const back = button('고치지 않고 돌아가기', () => { editing = false; prefs.set({ text: o.menu.join('\n') }); render(); }, 'btn');
@@ -84,8 +84,8 @@ function countPanel() {
   paintTotal(panel);
   return panel;
 }
-// 메뉴 한 줄: [이름 · 개수] 아래에 세는 칸 하나(나누는 메뉴는 🧊 아이스 · 🔥 따뜻한 둘)
-// 칸마다 [(🧊 아이스 7) 正正下 · − 취소 ＋ 추가]. 누르면 이 메뉴와 합계만 다시 그림
+// 메뉴 한 줄: [이름 · 개수] 아래에 세는 칸 하나(나누는 메뉴는 🧊 아이스 · 🔥 따뜻한 둘, 아이스만이면 🧊 하나)
+// 칸마다 [(🧊 아이스 7) 正正下 · − 취소 ＋ 추가]. 칸이 하나면 칸 개수는 빼고. 누르면 이 메뉴와 합계만 다시 그림
 function menuRow(line) {
   const li = h('li', 'order-row'), head = h('div', 'order-head'), num = h('span', 'order-n'), keys = entryKeys(line);
   head.append(h('b', 'order-name', readEntry(line).name), num);
@@ -97,7 +97,8 @@ function menuRow(line) {
     plus.setAttribute('aria-label', `${key} 하나 추가`);
     marks.setAttribute('aria-hidden', 'true');
     btns.append(minus, plus);
-    if (temp) row.append(h('span', 'temp', TEMP_LABEL[temp]), sub);
+    if (temp) row.append(h('span', 'temp', TEMP_LABEL[temp]));
+    if (keys.length > 1) row.append(sub);
     row.append(marks, btns);
     li.append(row);
     return fresh => {
@@ -145,17 +146,17 @@ function paintTotal(root = document) {
   find('onlyBtn').textContent = `주문한 것만 ${o.menu.filter(line => entryTotal(line, o.counts) > 0).length}`;
   find('copyBtn').disabled = find('clearBtn').disabled = !total;
 }
-// 메뉴에 없는 것: 메뉴 끝에 넣고 1잔 (아이스·따뜻한을 나누는 메뉴는 어느 쪽인지 몰라서 넣기만)
+// 메뉴에 없는 것: 메뉴 끝에 넣고 1잔 (아이스·따뜻한을 둘 다 고르는 메뉴는 어느 쪽인지 몰라서 넣기만)
 function addMenu(value) {
   const o = prefs.get(), line = parseMenu(value)[0];
   if (!line) return;
-  const { name, temps } = readEntry(line);
+  const { name } = readEntry(line), keys = entryKeys(line), pick = keys.length > 1;
   if (o.menu.some(x => readEntry(x).name === name)) { toast('이미 있는 메뉴예요. 그 줄의 ＋ 추가를 눌러요'); return; }
   if (o.menu.length >= MENU_MAX) { toast(`메뉴는 ${MENU_MAX}개까지예요`); return; }
   const menu = [...o.menu, line];
-  prefs.set({ menu, text: menu.join('\n'), counts: temps ? o.counts : { ...o.counts, [name]: 1 }, only: temps ? false : o.only }); // 0잔이라 주문한 것만 보기엔 안 보임
+  prefs.set({ menu, text: menu.join('\n'), counts: pick ? o.counts : { ...o.counts, [keys[0].key]: 1 }, only: pick ? false : o.only }); // 0잔이라 주문한 것만 보기엔 안 보임
   render();
-  toast(temps ? `‘${name}’ 메뉴를 넣었어요. 아이스·따뜻한 중에 ＋ 추가를 눌러요` : `‘${name}’ 1잔 넣었어요`);
+  toast(pick ? `‘${name}’ 메뉴를 넣었어요. 아이스·따뜻한 중에 ＋ 추가를 눌러요` : `‘${keys[0].key}’ 1잔 넣었어요`);
 }
 async function copyOrder() {
   const o = prefs.get(), text = orderText(o.menu, o.counts);
