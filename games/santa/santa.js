@@ -3,7 +3,8 @@
 // 매칭 결과는 이 화면 어디에도 그리지 않음 — 이름 옆에는 링크 복사·공유·QR 단추만
 // 링크 # 뒤에 결과가 들어 있어서(santa-core.js encodeCard) 서버 없이 각자 자기 폰에서 me.html로 확인
 // 이 기기에는 이름과 마지막 추첨(링크들)을 기억해 두어, 링크를 잃어버린 사람에게 다시 보낼 수 있음
-const prefs = store('santa', { names: '', draw: null }); // draw = { code, people: [{ name, card }] }
+// 위시리스트 id(santa-core.js wishId)도 이름마다 기억해서, 다시 섞거나 이름을 고쳐도 같은 이름이면 써 둔 위시리스트가 그대로 이어짐
+const prefs = store('santa', { names: '', draw: null, wishIds: {} }); // draw = { code, people: [{ name, card }] }, wishIds = { 이름: 위시 id }
 const done = new Set(); // 이번에 링크를 복사·공유·QR로 보여 준 사람 (표시만, 기억 안 함)
 
 function render() {
@@ -31,8 +32,12 @@ function namesPanel(text) {
   return panel;
 }
 function makeDraw(names) {
-  const to = matchSanta(names.length), code = drawCode();
-  prefs.set({ draw: { code, people: names.map((name, i) => ({ name, card: encodeCard({ d: code, g: name, r: names[to[i]] }) })) } });
+  const to = matchSanta(names.length), code = drawCode(), old = prefs.get().wishIds;
+  const ids = Object.fromEntries(names.map(name => [name, old[name] || wishId()]));
+  prefs.set({ wishIds: ids, draw: { code, people: names.map((name, i) => {
+    const r = names[to[i]];
+    return { name, card: encodeCard({ d: code, g: name, r, w: ids[name], rw: ids[r] }) };
+  }) } });
   done.clear();
   render();
 }
@@ -51,7 +56,7 @@ function linksPanel(draw) {
     list.append(li);
   }
   const again = button('다시 섞기', () => {
-    if (confirm('다시 섞으면 이미 보낸 링크는 예전 결과를 그대로 보여 줘요. 모두에게 새 링크를 다시 보내야 해요. 다시 섞을까요?')) makeDraw(draw.people.map(p => p.name));
+    if (confirm('다시 섞으면 이미 보낸 링크는 예전 결과를 그대로 보여 줘요. 모두에게 새 링크를 다시 보내야 해요. 써 둔 위시리스트는 그대로 남아요. 다시 섞을까요?')) makeDraw(draw.people.map(p => p.name));
   }, 'btn');
   const edit = button('이름 고치기', () => {
     if (confirm('이름을 고치면 지금 링크들은 버리고 다시 매칭해요. 고칠까요?')) { prefs.set({ draw: null }); render(); }
@@ -60,6 +65,7 @@ function linksPanel(draw) {
   btns.append(again, edit);
   panel.append(h('h2', '', `🎄 추첨 #${draw.code} · ${draw.people.length}명`),
     h('p', 'hint', '링크를 각자에게 따로 보내거나, 그 자리에서 QR을 띄워 본인 폰 카메라로 찍게 해요. 받은 사람 화면에도 같은 추첨 번호가 보여요. 주최자도 참가자라면 자기 링크만 열어 보세요.'),
+    h('p', 'hint', '🎁 링크를 연 사람은 위시리스트(갖고 싶은 것·참고 링크)를 써 둘 수 있어요. 안 써도 되고, 쓰면 그 사람을 뽑은 산타 화면에 바로 보여요.'),
     list, btns);
   return panel;
 }

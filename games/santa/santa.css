@@ -36,3 +36,17 @@ body:not(.me) main { max-width: 680px; }
 @keyframes wiggle { 0%, 70%, 100% { transform: none; } 78% { transform: rotate(-8deg); } 86% { transform: rotate(7deg); } 94% { transform: rotate(-3deg); } }
 @keyframes reveal { from { transform: scale(.6); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .me-gift .me-box, .me-result { animation: none; } }
+
+/* 위시리스트 (개인 화면): 받는 사람 것은 결과 밑, 내 것은 맨 아래 */
+.wish-box { align-self: stretch; display: flex; flex-direction: column; gap: .6rem; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: left; }
+.wish-box h2 { margin: 0; font-size: 1rem; }
+.wish-box .hint { margin: 0; line-height: 1.5; }
+.wish-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.wish-list li { display: flex; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.wish-list li:last-child { border-bottom: none; }
+.wish-item { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
+.wish-name { font-weight: 600; overflow-wrap: anywhere; }
+.wish-link { align-self: flex-start; font-size: .85rem; color: var(--pine); overflow-wrap: anywhere; }
+.wish-list .wish-empty { font-size: .9rem; color: var(--muted); }
+.wish-form { display: flex; flex-direction: column; gap: .4rem; }
+.wish-form .btn { align-self: flex-end; }

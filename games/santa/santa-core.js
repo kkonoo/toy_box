@@ -23,7 +23,28 @@ function matchSanta(n) {
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const drawCode = () => Array.from({ length: 4 }, () => CODE_CHARS[randInt(CODE_CHARS.length)]).join('');
 
-// 개인 링크의 # 뒤: { d: 추첨 번호, g: 선물하는 사람, r: 받는 사람 } → 글자를 섞어 base64url
+// 위시리스트 id: 사람마다 하나. 주최자가 매칭할 때 만들어 링크에만 넣음 (본인 링크 w = 쓰기, 나를 뽑은 산타 링크 rw = 읽기)
+// 이 id를 알아야 위시리스트를 읽고 쓸 수 있어서 길게 16글자. firestore.rules도 이 꼴만 받음
+const WISH_ID = /^[A-HJ-NP-Z2-9]{16}$/;
+const wishId = () => Array.from({ length: 16 }, () => CODE_CHARS[randInt(CODE_CHARS.length)]).join('');
+const MAX_WISHES = 10, MAX_WISH_NAME = 60, MAX_WISH_LINK = 1000; // firestore.rules와 같은 수
+// 위시 참고 링크: 쇼핑 앱 '공유 › 복사'처럼 글과 주소가 섞여 있으면 주소만 꺼내고, 'naver.me/abc'처럼 앞이 없으면 https:// 붙임
+// 빈칸이면 '', 주소로 못 읽으면 null
+function wishLink(text) {
+  const s = text.trim();
+  if (!s) return '';
+  const found = s.match(/https?:\/\/\S+/i);
+  const raw = found ? found[0] : /^[^\s/]+\.[^\s]+$/.test(s) ? `https://${s}` : null;
+  try {
+    const u = new URL(raw);
+    return /^https?:$/.test(u.protocol) && u.hostname.includes('.') && u.href.length <= MAX_WISH_LINK ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
+// 개인 링크의 # 뒤: { d: 추첨 번호, g: 선물하는 사람, r: 받는 사람, w: 내 위시리스트 id, rw: 받는 사람 위시리스트 id } → 글자를 섞어 base64url
+// w·rw는 위시리스트가 생기기 전에 만든 링크엔 없음
 // 암호화는 아니고 링크를 봐도 이름이 바로 읽히지 않게만 함. # 뒤는 서버로 안 가서 GitHub Pages 기록에도 안 남음
 const MASK = 'toybox-santa';
 function encodeCard(card) {
@@ -35,7 +56,8 @@ function decodeCard(code) {
   try {
     const bin = atob(code.replace(/-/g, '+').replace(/_/g, '/'));
     const card = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c, i) => c.charCodeAt(0) ^ MASK.charCodeAt(i % MASK.length))));
-    return card && typeof card.g === 'string' && typeof card.r === 'string' && typeof card.d === 'string' ? card : null;
+    const wishOk = v => v === undefined || (typeof v === 'string' && WISH_ID.test(v));
+    return card && typeof card.g === 'string' && typeof card.r === 'string' && typeof card.d === 'string' && wishOk(card.w) && wishOk(card.rw) ? card : null;
   } catch {
     return null;
   }

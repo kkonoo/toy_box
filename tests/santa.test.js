@@ -30,8 +30,32 @@ test('링크: 이름을 그대로 담지 않고, 풀면 그대로 돌아옴', ()
   }
 });
 
+test('링크: 위시리스트 id도 담고, 위시리스트 전 링크(w·rw 없음)도 그대로 열림', () => {
+  const card = { d: 'K3F9', g: '김연구원', r: '박교수님', w: P.wishId(), rw: P.wishId() };
+  assert.deepEqual({ ...P.decodeCard(P.encodeCard(card)) }, card);
+  assert.deepEqual({ ...P.decodeCard(P.encodeCard({ d: 'K3F9', g: 'a', r: 'b' })) }, { d: 'K3F9', g: 'a', r: 'b' });
+});
+
 test('링크: 잘못된 것은 null', () => {
-  for (const bad of ['', 'abc', '!!!', P.encodeCard({ d: 'X' }), btoa('{"g":"a","r":"b","d":"c"}')]) assert.equal(P.decodeCard(bad), null);
+  for (const bad of ['', 'abc', '!!!', P.encodeCard({ d: 'X' }), btoa('{"g":"a","r":"b","d":"c"}'),
+    P.encodeCard({ d: 'X', g: 'a', r: 'b', w: 'short' }), P.encodeCard({ d: 'X', g: 'a', r: 'b', rw: 'AAAA/AAAAAAAAAAA' })]) assert.equal(P.decodeCard(bad), null);
+});
+
+test('위시리스트 id: 16글자, 헷갈리는 글자 없음, 겹치지 않음', () => {
+  const seen = new Set();
+  for (let k = 0; k < 2000; k++) { const id = P.wishId(); assert.match(id, /^[A-HJ-NP-Z2-9]{16}$/); seen.add(id); }
+  assert.equal(seen.size, 2000);
+});
+
+test('위시 참고 링크: 주소만 꺼내고, 앞이 없으면 https:// 붙임', () => {
+  assert.equal(P.wishLink(''), '');
+  assert.equal(P.wishLink('  '), '');
+  assert.equal(P.wishLink('https://www.coupang.com/vp/products/123?itemId=4'), 'https://www.coupang.com/vp/products/123?itemId=4');
+  assert.equal(P.wishLink('쿠팡을 추천합니다! 겨울 장갑\nhttps://link.coupang.com/a/bXyZ12'), 'https://link.coupang.com/a/bXyZ12');
+  assert.equal(P.wishLink('naver.me/abc'), 'https://naver.me/abc');
+  assert.equal(P.wishLink('HTTP://Example.com/Path'), 'http://example.com/Path');
+  assert.equal(P.wishLink('https://smartstore.naver.com/상품'), 'https://smartstore.naver.com/%EC%83%81%ED%92%88');
+  for (const bad of ['겨울 장갑', 'javascript:alert(1)', 'ftp://a.com/x', 'https://localhost/x', `https://a.com/${'x'.repeat(1000)}`]) assert.equal(P.wishLink(bad), null, bad);
 });
 
 test('이름: 쉼표·줄바꿈, 겹치는 이름 찾기', () => {

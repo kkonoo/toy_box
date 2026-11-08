@@ -1,5 +1,5 @@
 'use strict';
-// 투표 저장소 (Firebase Firestore): 장난감 상자에서 서버를 쓰는 건 투표뿐. 설정은 js/firebase-config.js, 지키는 규칙은 firestore.rules
+// 투표 저장소 (Firebase Firestore): 장난감 상자에서 서버를 쓰는 건 투표와 시크릿 산타 위시리스트뿐. 설정은 js/firebase-config.js, 지키는 규칙은 firestore.rules
 // 로그인 화면 없이 익명 로그인 → 기기(브라우저)마다 1표. 브라우저 데이터를 지우거나 다른 브라우저로 열면 새 사람
 // 익명 로그인 uid는 어디에도 그대로 남기지 않고 투표마다 섞은 열쇠(voteKey)로만 씀
 // polls/{투표 id} · polls/{투표 id}/options/{항목 id} · polls/{투표 id}/votes/{표 열쇠}

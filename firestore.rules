@@ -1,6 +1,7 @@
 rules_version = '2';
 // 장난감 상자 Firestore 보안 규칙 → Firebase 콘솔 › Firestore Database › 규칙에 그대로 붙여 넣어요
-// 쓰는 곳은 투표(games/vote)뿐. 로그인 화면 없이 익명 로그인(기기마다 따로)으로 1기기 1표
+// 쓰는 곳은 투표(games/vote)와 시크릿 산타 위시리스트(games/santa). 둘 다 로그인 화면 없이 익명 로그인(기기마다 따로)
+// 투표: 1기기 1표
 // 익명 로그인 uid는 그대로 저장하지 않고 투표마다 다르게 섞은 열쇠로만 씀 (games/vote/vote-db.js voteKey와 같은 계산)
 //   주최자 열쇠 = sha256('owner:' + uid + ':' + 투표 id), 표 열쇠 = sha256('vote:' + uid + ':' + 투표 id)
 //   → 데이터를 들여다봐도 어느 표가 주최자 것인지, 다른 투표의 누구와 같은 사람인지 알 수 없음
@@ -45,6 +46,22 @@ service cloud.firestore {
         && (p.anonymous ? !('name' in d) : (d.name is string && d.name.size() > 0 && d.name.size() <= 20))
         && d.at == request.time
         && isOpen(p);
+    }
+
+    // 시크릿 산타 위시리스트 (games/santa/santa-db.js): santaWishes/{위시 id}/items/{항목}
+    // 위시 id(16글자, santa-core.js wishId)는 주최자가 매칭할 때 만들어 링크에만 넣음 → 본인·나를 뽑은 산타(와 주최자 기기)만 앎
+    // id를 알아야 읽고 쓸 수 있음 (목록으로 찾을 수 없음). 본인 쓰기 / 산타 읽기까지 나누지는 못함
+    // 항목 이름 60자, 참고 링크(없어도 됨)는 http(s) 주소 1000자까지 (santa-core.js MAX_WISH_NAME · MAX_WISH_LINK)
+    function wishList(list) { return list.matches('[A-HJ-NP-Z2-9]{16}'); }
+    function newWish(d) {
+      return d.keys().hasOnly(['name', 'link', 'at'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && (!('link' in d) || (d.link is string && d.link.size() <= 1000 && d.link.matches('https?://.+')))
+        && d.at == request.time;
+    }
+    match /santaWishes/{list}/items/{item} {
+      allow read, delete: if signedIn() && wishList(list);
+      allow create: if signedIn() && wishList(list) && newWish(request.resource.data);
     }
 
     match /polls/{poll} {
