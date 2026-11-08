@@ -3,7 +3,7 @@
 // kkonoo.github.io 의 다른 앱(살림노트 등)과 캐시 저장소를 같이 쓰므로 이름을 다르게, 남의 캐시는 지우지 않기
 const CACHE = 'toybox-v1';
 const SHELL = [
-  './', 'manifest.webmanifest', 'css/base.css', 'css/home.css', 'js/ui.js', 'js/random.js', 'js/pwa.js', 'js/firebase-config.js', 'vendor/qrcode.js',
+  './', 'manifest.webmanifest', 'css/base.css', 'css/home.css', 'js/ui.js', 'js/theme.js', 'js/random.js', 'js/pwa.js', 'js/firebase-config.js', 'vendor/qrcode.js',
   'icons/app-192.png', 'icons/app-512.png', 'icons/app-maskable-192.png', 'icons/app-maskable-512.png', 'icons/apple-touch-icon.png',
   'games/lots/', 'games/lots/lots.css', 'games/lots/lots-core.js', 'games/lots/lots.js',
   'games/wheel/', 'games/wheel/wheel.css', 'games/wheel/wheel-core.js', 'games/wheel/wheel.js',

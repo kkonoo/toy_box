@@ -24,7 +24,8 @@ main { max-width: 640px; }
 
 /* 달력 (날짜 투표): 누르면 바로 넣기, 넣은 날은 색칠 */
 .cal { align-self: stretch; display: flex; flex-direction: column; gap: .4rem; max-width: 24rem; --sun: var(--danger); --sat: #3D63DD; }
-@media (prefers-color-scheme: dark) { .cal { --sat: #7FA2FF; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cal { --sat: #7FA2FF; } }
+:root[data-theme="dark"] .cal { --sat: #7FA2FF; }
 .cal-head { display: flex; align-items: center; justify-content: space-between; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
 .cal-wd { padding: .15rem 0; font-size: .75rem; color: var(--muted); }

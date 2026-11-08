@@ -15,15 +15,22 @@
   --danger: #E5484D;
   --shadow: 0 1px 2px rgba(20, 20, 20, .04), 0 6px 20px rgba(20, 20, 20, .05);
   --radius: 16px;
-  color-scheme: light;
+  color-scheme: only light; /* only = 삼성 인터넷 등이 강제로 어둡게 바꾸지 않게 */
 }
+/* 어두운 색: 기기 설정이 어두움(🌗 자동) 또는 🌙 어둡게를 고름 (js/theme.js가 <html data-theme>를 붙임). 게임 css도 같은 두 곳에 씀 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #121214; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
     --text: #ECECEE; --muted: #8E8E95; --faint: #5C5C63;
     --accent: #8F92FF; --accent-soft: #25264A; --on-accent: #101124; --gold: #E3B45C; --danger: #FF6B6F;
-    --shadow: none; color-scheme: dark;
+    --shadow: none; color-scheme: only dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #121214; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
+  --text: #ECECEE; --muted: #8E8E95; --faint: #5C5C63;
+  --accent: #8F92FF; --accent-soft: #25264A; --on-accent: #101124; --gold: #E3B45C; --danger: #FF6B6F;
+  --shadow: none; color-scheme: only dark;
 }
 html { font-size: 16px; }
 @media (min-width: 1280px) { html.big { font-size: 18px; } }
@@ -110,6 +117,13 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
 .icon-btn.small { width: 1.75rem; height: 1.75rem; font-size: 1rem; color: var(--muted); }
 .icon-btn.small:hover { background: var(--surface-2); color: var(--text); }
 .icon-btn:disabled { opacity: .3; cursor: default; }
+
+/* 🌗 화면 밝기 단추와 고르는 메뉴 (js/theme.js) */
+.theme-btn { font-size: 1.15rem; }
+.theme-menu { position: fixed; inset: auto; margin: 0; padding: .3rem; min-width: 11rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); box-shadow: 0 12px 32px rgba(0, 0, 0, .18); }
+.theme-menu button { display: block; width: 100%; padding: .55rem .8rem; border: none; border-radius: 8px; background: transparent; font-size: .95rem; text-align: left; cursor: pointer; }
+.theme-menu button:hover { background: var(--surface-2); }
+.theme-menu button.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 
 /* 고르기 (짧게·보통·길게 같은 것) */
 .seg { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }

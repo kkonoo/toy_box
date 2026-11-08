@@ -2,7 +2,8 @@
 main { max-width: 640px; }
 /* 아이스는 파랑, 따뜻한은 주황 (빨강·초록으로 나누지 않음. 글자도 같이 붙임) */
 :root { --ice: #2563C9; --hot: #C2531F; }
-@media (prefers-color-scheme: dark) { :root { --ice: #7FA8FF; --hot: #FF9B61; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ice: #7FA8FF; --hot: #FF9B61; } }
+:root[data-theme="dark"] { --ice: #7FA8FF; --hot: #FF9B61; }
 .order-panel { gap: .8rem; }
 .order-panel h2 { margin: 0; font-size: 1.05rem; }
 .order-panel > .hint { margin: 0; line-height: 1.55; }

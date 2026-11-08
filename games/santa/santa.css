@@ -1,6 +1,7 @@
 /* 시크릿 산타: 크리스마스 빨강·초록. 주최자 화면은 폰·노트북 둘 다, 개인 화면(me.html)은 폰 기준 */
 :root { --accent: #C8323C; --accent-soft: #FBE7E8; --pine: #2E7D4F; }
-@media (prefers-color-scheme: dark) { :root { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; } }
+:root[data-theme="dark"] { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; }
 .game-head h1 { color: var(--accent); }
 
 /* 주최자 */

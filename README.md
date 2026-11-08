@@ -47,6 +47,7 @@ icons/              앱 아이콘 🧸 (tools/make-icons.py로 그림, Noto Colo
 css/base.css        모든 페이지가 같이 쓰는 색(라이트/다크 자동)·단추·판
 js/ui.js            화면 만들기(h, button, svg, stepper), 이 기기에 저장(store), 소리·진동, 알림
 js/random.js        crypto.getRandomValues 난수 (randInt, cryptoShuffle)
+js/theme.js         화면 밝기 🌗 자동·☀️ 밝게·🌙 어둡게 (모든 페이지 <head>, 머리 줄 끝 단추, 이 기기 toybox:theme)
 js/firebase-config.js  Firebase 설정 (투표·포트럭·누가 썼을까·시크릿 산타 위시리스트, null이면 그 화면들에 '준비 중', 위시리스트 칸은 안 보임)
 firestore.rules     Firestore 보안 규칙 (투표·포트럭·누가 썼을까·위시리스트) → Firebase 콘솔에 붙여 넣음
 games/<게임>/       index.html · <게임>.js(화면) · <게임>-core.js(계산, 화면 없음) · <게임>.css
@@ -55,7 +56,7 @@ tests/              node --test
 ```
 
 - 뽑기는 모두 `crypto.getRandomValues`로 결과를 먼저 정하고, 화면은 그 결과대로 움직이기만 해요.
-- 설정은 이 기기의 localStorage(`toybox:<게임>`)에만 남아요.
+- 설정은 이 기기의 localStorage(`toybox:<게임>`)에만 남아요. 화면 밝기는 머리 줄 끝 🌗 단추로 자동(기기 설정 따라)·밝게·어둡게 중에 고르고(`toybox:theme`), 모든 페이지에 같이 적용돼요. 색은 `css/base.css`와 게임 css의 `:root[data-theme]`가 정해요.
 - 시크릿 산타 개인 링크는 `games/santa/me.html#…` 꼴이고, `#` 뒤에 그 사람 결과(추첨 번호·이름·받는 사람)를 섞어서 담아요. 암호화는 아니라 마음먹고 풀면 볼 수 있지만 링크만 봐서는 이름이 안 읽혀요. `#` 뒤는 서버로 가지 않아요. 서버가 없어서 다시 섞어도 예전 링크는 예전 결과를 그대로 보여 주므로, 화면의 추첨 번호(예: #K3F9)로 최신 링크인지 확인해요.
 - 시크릿 산타 위시리스트는 Firebase(Firestore)의 `santaWishes/{위시 id}/items/{항목}`에 모아요(`games/santa/santa-db.js`). 위시 id(16글자)는 주최자가 매칭할 때 사람마다 만들어 링크에 같이 넣어요: 내 링크엔 내 위시 id(쓰기), 산타 링크엔 받는 사람 위시 id(읽기). 이 id를 아는 사람만 읽고 쓸 수 있고 목록으로는 못 찾아요. 참가자 이름은 저장하지 않아요. 주최자 기기는 이름마다 위시 id를 기억해서(`toybox:santa`), 다시 섞거나 이름을 고쳐도 같은 이름이면 써 둔 위시리스트가 그대로 이어져요. 위시리스트가 생기기 전에 만든 링크엔 위시 칸이 안 보여요.
 - 타로의 🔮 Claude 읽기는 브라우저가 `api.anthropic.com`을 바로 불러요(서버 없음). API 키는 각자 Claude Console에서 만들어 🔑에 넣고, '이 기기에 저장'(localStorage)이나 '이번만 쓰기'(sessionStorage, 탭을 닫으면 지워짐)를 골라요. 모델(`claude-opus-5-5`)과 읽는 법(프롬프트)은 `games/tarot/tarot.js`의 `claudeStream`, `games/tarot/tarot-core.js`의 `READER_SYSTEM`에 있어요.
