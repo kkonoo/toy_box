@@ -1,0 +1,30 @@
+/* 선물 뺏기 (큰 화면): 순서 줄 · 지금 차례 · 열린 선물 카드들 */
+:root { --accent: #C8323C; --accent-soft: #FBE7E8; --pine: #2E7D4F; }
+@media (prefers-color-scheme: dark) { :root { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; } }
+.game-head h1 { color: var(--accent); }
+main { max-width: 960px; }
+.swap-panel { gap: .8rem; }
+.swap-panel h2 { margin: 0; font-size: 1.05rem; }
+.swap-panel > .big { align-self: center; }
+.swap-panel > .hint { margin: 0; line-height: 1.55; }
+.swap-info { margin: 0; font-size: .9rem; color: var(--muted); }
+.swap-order { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.swap-order li { display: flex; align-items: baseline; gap: .35rem; padding: .3rem .75rem; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); }
+.swap-order small { font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.swap-order li.now { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.swap-order li.has b::after { content: " 🎁"; }
+.swap-order li.wait { opacity: .6; }
+.swap-turn { display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: 1.2rem 1rem; border-radius: 18px; background: var(--surface-2); text-align: center; }
+.swap-turn.end { background: color-mix(in srgb, var(--pine) 14%, var(--surface)); }
+.swap-big { margin: 0; font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+.swap-sub { margin: 0; color: var(--muted); }
+.swap-open { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; width: min(100%, 34rem); }
+.swap-open .text-input { flex: 1 1 14rem; min-width: 0; }
+.swap-gifts { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .6rem; }
+.swap-gift { display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.swap-gift.hot { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.swap-gift.hot .swap-label::after { content: " 🔥"; }
+.swap-label { font-size: 1.1rem; overflow-wrap: anywhere; }
+.swap-holder { font-weight: 600; color: var(--pine); }
+.swap-steals { font-size: .8rem; color: var(--muted); }
+.swap-gift .btn { margin-top: .3rem; }
