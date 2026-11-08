@@ -9,6 +9,7 @@ const SHELL = [
   'games/wheel/', 'games/wheel/wheel.css', 'games/wheel/wheel-core.js', 'games/wheel/wheel.js',
   'games/ladder/', 'games/ladder/ladder.css', 'games/ladder/ladder-core.js', 'games/ladder/ladder.js',
   'games/bomb/', 'games/bomb/bomb.css', 'games/bomb/bomb-core.js', 'games/bomb/bomb.js',
+  'games/christmas/', 'games/christmas/christmas.css',
   'games/santa/', 'games/santa/me.html', 'games/santa/santa.css', 'games/santa/santa-core.js', 'games/santa/santa.js', 'games/santa/santa-db.js', 'games/santa/me.js',
   'games/tarot/', 'games/tarot/tarot.css', 'games/tarot/tarot-cards.js', 'games/tarot/tarot-core.js', 'games/tarot/tarot.js',
   'games/order/', 'games/order/order.css', 'games/order/order-core.js', 'games/order/order.js',

@@ -50,3 +50,29 @@ body:not(.me) main { max-width: 680px; }
 .wish-list .wish-empty { font-size: .9rem; color: var(--muted); }
 .wish-form { display: flex; flex-direction: column; gap: .4rem; }
 .wish-form .btn { align-self: flex-end; }
+
+/* 선물 주인 맞히기 (주최자 기기, 큰 화면): 순서 줄 · 차례 · 기록 표 */
+.guess-order { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.guess-order li { display: flex; align-items: baseline; gap: .3rem; padding: .3rem .75rem; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); }
+.guess-order small { font-size: .75rem; color: var(--muted); }
+.guess-order li.now { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.guess-order li.ok { opacity: .55; }
+.guess-order li.ok small { color: var(--pine); }
+.guess-turn { display: flex; flex-direction: column; align-items: center; gap: .7rem; padding: 1.2rem 1rem; border-radius: 18px; background: var(--surface-2); text-align: center; }
+.guess-turn.right { background: color-mix(in srgb, var(--pine) 14%, var(--surface)); animation: reveal .35s cubic-bezier(.2, 1.4, .4, 1); }
+.guess-turn.wrong { animation: shake .4s; }
+.guess-big { margin: 0; font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+.guess-sub { margin: 0; font-size: 1.1rem; color: var(--muted); }
+.guess-turn.right .guess-sub { color: var(--text); font-weight: 600; }
+.guess-names { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: .3rem 0; }
+.guess-name { min-width: 6rem; padding: .7rem 1.1rem; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); font-size: 1.15rem; font-weight: 700; cursor: pointer; }
+.guess-name.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.guess-name:disabled { cursor: default; opacity: .4; }
+.guess-name.tried { text-decoration: line-through; }
+.guess-name.known::after { content: " 🎅"; }
+.guess-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.guess-table th { padding: .4rem .5rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .8rem; font-weight: 600; text-align: left; }
+.guess-table td { padding: .5rem; border-bottom: 1px solid var(--line); }
+.guess-table tr.ok td:nth-child(2) { color: var(--pine); font-weight: 600; }
+@keyframes shake { 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(2px); } }
+@media (prefers-reduced-motion: reduce) { .guess-turn.right, .guess-turn.wrong { animation: none; } }

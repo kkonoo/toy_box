@@ -1,0 +1,7 @@
+/* 크리스마스 모음: 홈 카드(css/home.css)에 크리스마스 빨강·초록만 입힘 */
+:root { --accent: #C8323C; --accent-soft: #FBE7E8; --pine: #2E7D4F; }
+@media (prefers-color-scheme: dark) { :root { --accent: #FF6B6B; --accent-soft: #3A1F22; --on-accent: #1A0B0C; --pine: #6CC58F; } }
+.game-head h1 { color: var(--accent); }
+.xmas-lead { margin: 0 0 1.2rem; color: var(--muted); }
+.xmas-group { margin: 1.6rem 0 .7rem; font-size: 1rem; color: var(--pine); }
+.xmas-lead + .xmas-group { margin-top: 0; }

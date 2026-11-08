@@ -62,3 +62,28 @@ function decodeCard(code) {
     return null;
   }
 }
+
+// ---------- 선물 주인 맞히기 (파티에서, 매칭한 기기) ----------
+// order = 맞히는 순서(이름들), tries = { 이름: [찍은 이름…] }, santaOf = { 받는 사람: 준 사람 }
+// 맞힌 사람 = 찍은 이름 가운데 자기 산타가 있음
+const santaOfDraw = cards => Object.fromEntries(cards.map(c => [c.r, c.g]));
+const hasGuessed = (name, tries, santaOf) => (tries[name] || []).includes(santaOf[name]);
+// 다음 차례: at 다음 사람부터 한 바퀴 돌며 아직 못 맞힌 사람의 자리. 모두 맞혔으면 -1
+function nextGuesser(order, at, tries, santaOf) {
+  for (let k = 1; k <= order.length; k++) {
+    const i = (at + k) % order.length;
+    if (!hasGuessed(order[i], tries, santaOf)) return i;
+  }
+  return -1;
+}
+// 찍을 수 있는 이름: 나 말고, 내가 이미 찍은 이름 말고, 다른 사람의 산타로 이미 밝혀진 사람 말고 (선물은 한 사람이 하나씩)
+function guessChoices(name, order, tries, santaOf) {
+  const known = new Set(order.filter(x => x !== name && hasGuessed(x, tries, santaOf)).map(x => santaOf[x]));
+  return order.filter(x => x !== name && !(tries[name] || []).includes(x) && !known.has(x));
+}
+// 기록 표: 맞힌 사람은 적게 찍은 순, 못 맞힌 사람은 그 아래 많이 찍은 순. 같으면 맞히는 순서대로
+function guessTable(order, tries, santaOf) {
+  return order.map((name, i) => ({ name, i, n: (tries[name] || []).length, ok: hasGuessed(name, tries, santaOf) }))
+    .sort((a, b) => (b.ok - a.ok) || (a.ok ? a.n - b.n : b.n - a.n) || a.i - b.i)
+    .map(({ name, n, ok }) => ({ name, n, ok }));
+}

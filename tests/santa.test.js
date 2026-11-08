@@ -66,3 +66,37 @@ test('이름: 쉼표·줄바꿈, 겹치는 이름 찾기', () => {
 test('추첨 번호: 4글자, 헷갈리는 글자 없음', () => {
   for (let k = 0; k < 500; k++) assert.match(P.drawCode(), /^[A-HJ-NP-Z2-9]{4}$/);
 });
+
+// 선물 주인 맞히기 예: 민지→서준, 서준→민지, 하은→도윤, 도윤→하은 (서로 뽑은 쌍 둘)
+const SANTA = { 서준: '민지', 민지: '서준', 도윤: '하은', 하은: '도윤' }; // 받는 사람: 준 사람
+const ORDER = ['하은', '민지', '도윤', '서준'];
+
+test('맞히기: 매칭 카드에서 받는 사람 → 산타', () => {
+  assert.deepEqual({ ...P.santaOfDraw([{ g: '민지', r: '서준' }, { g: '서준', r: '민지' }]) }, { 서준: '민지', 민지: '서준' });
+});
+
+test('맞히기: 다음 차례는 아직 못 맞힌 사람, 한 바퀴 돌고, 다 맞히면 -1', () => {
+  assert.equal(P.nextGuesser(ORDER, 0, {}, SANTA), 1);
+  assert.equal(P.nextGuesser(ORDER, 3, {}, SANTA), 0);
+  const tries = { 민지: ['서준'], 도윤: ['하은'] }; // 민지·도윤 맞힘
+  assert.equal(P.nextGuesser(ORDER, 0, tries, SANTA), 3);
+  assert.equal(P.nextGuesser(ORDER, 3, tries, SANTA), 0);
+  assert.equal(P.nextGuesser(ORDER, 0, { ...tries, 하은: ['민지', '도윤'], 서준: ['민지'] }, SANTA), -1);
+});
+
+test('맞히기: 나·이미 찍은 이름·밝혀진 산타는 못 찍음', () => {
+  assert.deepEqual([...P.guessChoices('하은', ORDER, {}, SANTA)], ['민지', '도윤', '서준']);
+  assert.deepEqual([...P.guessChoices('하은', ORDER, { 하은: ['민지'] }, SANTA)], ['도윤', '서준']);
+  // 민지가 서준을 맞힘 → 서준은 민지의 산타로 밝혀짐 → 하은은 서준을 못 찍음
+  assert.deepEqual([...P.guessChoices('하은', ORDER, { 민지: ['도윤', '서준'] }, SANTA)], ['민지', '도윤']);
+  // 틀리게 찍은 이름(도윤)은 밝혀진 게 아님
+  assert.deepEqual([...P.guessChoices('서준', ORDER, { 민지: ['도윤'] }, SANTA)], ['하은', '민지', '도윤']);
+});
+
+test('맞히기: 기록 표', () => {
+  const tries = { 하은: ['민지', '서준', '도윤'], 민지: ['서준'], 도윤: ['민지', '하은'], 서준: ['하은', '민지'] };
+  assert.deepEqual(P.guessTable(ORDER, tries, SANTA).map(r => `${r.name}${r.n}${r.ok ? 'O' : 'X'}`), ['민지1O', '도윤2O', '서준2O', '하은3O']);
+  // 중간: 못 맞힌 사람은 아래, 많이 찍은 순
+  const mid = { 하은: ['민지'], 민지: ['서준'], 도윤: ['민지', '서준'] };
+  assert.deepEqual(P.guessTable(ORDER, mid, SANTA).map(r => `${r.name}${r.n}${r.ok ? 'O' : 'X'}`), ['민지1O', '도윤2X', '하은1X', '서준0X']);
+});
