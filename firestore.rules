@@ -1,6 +1,6 @@
 rules_version = '2';
 // 장난감 상자 Firestore 보안 규칙 → Firebase 콘솔 › Firestore Database › 규칙에 그대로 붙여 넣어요
-// 쓰는 곳은 투표(games/vote)와 시크릿 산타 위시리스트(games/santa). 둘 다 로그인 화면 없이 익명 로그인(기기마다 따로)
+// 쓰는 곳은 투표(games/vote)·포트럭(games/potluck)·누가 썼을까(games/whowrote)·시크릿 산타 위시리스트(games/santa). 모두 로그인 화면 없이 익명 로그인(기기마다 따로)
 // 투표: 1기기 1표
 // 익명 로그인 uid는 그대로 저장하지 않고 투표마다 다르게 섞은 열쇠로만 씀 (games/vote/vote-db.js voteKey와 같은 계산)
 //   주최자 열쇠 = sha256('owner:' + uid + ':' + 투표 id), 표 열쇠 = sha256('vote:' + uid + ':' + 투표 id)
@@ -46,6 +46,42 @@ service cloud.firestore {
         && (p.anonymous ? !('name' in d) : (d.name is string && d.name.size() > 0 && d.name.size() <= 20))
         && d.at == request.time
         && isOpen(p);
+    }
+
+    // 포트럭 (games/potluck/potluck-db.js): potlucks/{포트럭} · potlucks/{포트럭}/entries/{신청}
+    // 신청은 기기마다 하나(id = sha256('entry:' + uid + ':' + 포트럭 id)), 열려 있을 때만 넣기·바꾸기·빼기
+    // 만든 기기는 남은 칸 랜덤 배정(host: true, 다른 id)을 넣고, 아무 신청이나 지우고, 마감·다시 열기·칸 수 바꾸기
+    function potDoc(p) { return get(/databases/$(database)/documents/potlucks/$(p)).data; }
+    function newPotluck(d, p) {
+      return d.keys().hasOnly(['title', 'cats', 'owner', 'closed', 'createdAt'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 60
+        && d.cats is list && d.cats.size() > 0 && d.cats.size() <= 8
+        && d.closed == false && d.owner == key('owner', p) && d.createdAt == request.time;
+    }
+    function newEntry(d, pd, host) {
+      return d.keys().hasOnly(['name', 'cat', 'dish', 'host', 'at'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 20
+        && d.cat is int && d.cat >= 0 && d.cat < pd.cats.size()
+        && d.dish is string && d.dish.size() <= 40
+        && (host ? d.host == true : !('host' in d))
+        && d.at == request.time;
+    }
+    match /potlucks/{p} {
+      allow get: if signedIn(); // 링크(포트럭 id)를 아는 사람만 — 목록은 못 봄
+      allow create: if signedIn() && newPotluck(request.resource.data, p);
+      allow update: if signedIn() && isOwner(resource.data, p)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed', 'cats'])
+        && request.resource.data.closed is bool
+        && request.resource.data.cats is list && request.resource.data.cats.size() == resource.data.cats.size();
+      allow delete: if signedIn() && isOwner(resource.data, p);
+
+      match /entries/{e} {
+        allow read: if signedIn();
+        allow create, update: if signedIn() && (
+          (e == key('entry', p) && !potDoc(p).closed && newEntry(request.resource.data, potDoc(p), false))
+          || (e != key('entry', p) && isOwner(potDoc(p), p) && newEntry(request.resource.data, potDoc(p), true)));
+        allow delete: if signedIn() && ((e == key('entry', p) && !potDoc(p).closed) || isOwner(potDoc(p), p));
+      }
     }
 
     // 시크릿 산타 위시리스트 (games/santa/santa-db.js): santaWishes/{위시 id}/items/{항목}
