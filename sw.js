@@ -17,6 +17,7 @@ const SHELL = [
   'games/chosung/', 'games/chosung/chosung.css', 'games/chosung/chosung-core.js', 'games/chosung/chosung.js',
   'games/tarot/', 'games/tarot/tarot.css', 'games/tarot/tarot-cards.js', 'games/tarot/tarot-core.js', 'games/tarot/tarot.js',
   'games/order/', 'games/order/order.css', 'games/order/order-core.js', 'games/order/order.js',
+  'games/whowrote/', 'games/whowrote/whowrote.css', 'games/whowrote/whowrote-core.js', 'games/whowrote/whowrote-db.js', 'games/whowrote/whowrote.js',
   'games/vote/', 'games/vote/vote.css', 'games/vote/vote-core.js', 'games/vote/vote-db.js', 'games/vote/vote.js',
 ];
 

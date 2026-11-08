@@ -84,6 +84,38 @@ service cloud.firestore {
       }
     }
 
+    // 누가 썼을까 (games/whowrote/whowrote-db.js): whoRooms/{방} · whoRooms/{방}/answers/{열쇠_질문 번호}
+    // 답 id = sha256('ans:' + uid + ':' + 방 id) + '_' + 질문 번호 → 기기마다 질문 하나에 답 하나, 열려 있을 때만 넣기·고치기·빼기
+    // 모든 답(이름 포함)은 방을 만든 기기만 읽음. 다른 사람은 자기 답만
+    function roomDoc(r) { return get(/databases/$(database)/documents/whoRooms/$(r)).data; }
+    function myAnswer(a, r) { return a.matches(key('ans', r) + '_[0-9]'); }
+    function newRoom(d, r) {
+      return d.keys().hasOnly(['questions', 'owner', 'closed', 'createdAt'])
+        && d.questions is list && d.questions.size() > 0 && d.questions.size() <= 5
+        && d.closed == false && d.owner == key('owner', r) && d.createdAt == request.time;
+    }
+    function newAnswer(d, rd, a, r) {
+      return d.keys().hasOnly(['name', 'q', 'text', 'at'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 20
+        && d.q is int && d.q >= 0 && d.q < rd.questions.size() && a == key('ans', r) + '_' + string(d.q)
+        && d.text is string && d.text.size() > 0 && d.text.size() <= 100
+        && d.at == request.time;
+    }
+    match /whoRooms/{r} {
+      allow get: if signedIn(); // 링크(방 id)를 아는 사람만 — 목록은 못 봄
+      allow create: if signedIn() && newRoom(request.resource.data, r);
+      allow update: if signedIn() && isOwner(resource.data, r)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed']) && request.resource.data.closed is bool;
+      allow delete: if signedIn() && isOwner(resource.data, r);
+
+      match /answers/{a} {
+        allow get: if signedIn() && (myAnswer(a, r) || isOwner(roomDoc(r), r));
+        allow list: if signedIn() && isOwner(roomDoc(r), r);
+        allow create, update: if signedIn() && !roomDoc(r).closed && newAnswer(request.resource.data, roomDoc(r), a, r);
+        allow delete: if signedIn() && ((myAnswer(a, r) && !roomDoc(r).closed) || isOwner(roomDoc(r), r));
+      }
+    }
+
     // 시크릿 산타 위시리스트 (games/santa/santa-db.js): santaWishes/{위시 id}/items/{항목}
     // 위시 id(16글자, santa-core.js wishId)는 주최자가 매칭할 때 만들어 링크에만 넣음 → 본인·나를 뽑은 산타(와 주최자 기기)만 앎
     // id를 알아야 읽고 쓸 수 있음 (목록으로 찾을 수 없음). 본인 쓰기 / 산타 읽기까지 나누지는 못함
