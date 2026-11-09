@@ -38,3 +38,7 @@ main { max-width: 720px; }
 .pot-pick button { padding: .4rem .8rem; font-size: .9rem; }
 .pot-pick button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 .pot-pick button:disabled { opacity: .45; cursor: default; }
+.pot-ex { padding: .5rem; border-radius: 12px; background: var(--surface-2); }
+.pot-ex button { padding: .3rem .7rem; background: var(--surface); font-size: .85rem; color: var(--text); }
+.pot-ex button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.pot-ex button.taken { text-decoration: line-through; color: var(--faint); }

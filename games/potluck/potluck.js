@@ -41,7 +41,7 @@ function createPanel() {
   people.append(h('b', '', '인원'), stepper(draft.people, 2, 30, v => { draft.people = v; draft.slots = recommendSlots(v); redraw(); }), h('span', 'hint', '바꾸면 칸을 인원에 맞춰 다시 나눠요'));
   POT_CATS.forEach((c, i) => {
     const li = h('li');
-    li.append(h('b', '', c.name), stepper(draft.slots[i], 0, 15, v => { draft.slots[i] = v; redraw(); }), h('small', '', c.ex));
+    li.append(h('b', '', c.name), stepper(draft.slots[i], 0, 15, v => { draft.slots[i] = v; redraw(); }), h('small', '', `${c.ex.slice(0, 4).join(', ')} 등 ${c.ex.length}가지`));
     cats.append(li);
   });
   const total = draft.slots.reduce((a, b) => a + b, 0);
@@ -54,7 +54,7 @@ function createPanel() {
 async function create(go) {
   go.disabled = true;
   go.textContent = '만드는 중…';
-  const title = draft.title.trim(), cats = POT_CATS.map((c, i) => ({ name: c.name, slots: draft.slots[i], ex: c.ex }));
+  const title = draft.title.trim(), cats = POT_CATS.map((c, i) => ({ name: c.name, slots: draft.slots[i], ex: c.ex.join(', ') }));
   try {
     const id = await potDb.create(title, cats);
     remember(id, title);
@@ -128,9 +128,10 @@ function build(v) {
   v.$sign = h('section', 'panel pot-panel');
   v.$signHead = h('h2');
   v.$cats = h('div', 'pills pot-pick');
+  v.$ex = h('div', 'pills pot-ex');
   v.$signBtns = h('div', 'play-btns');
-  v.$sign.append(v.$signHead, v.name, v.$cats, v.dish, v.$signBtns,
-    h('p', 'hint', '카테고리를 고르고 가져올 메뉴를 적어요. 메뉴는 나중에 정해도 돼요. 이 기기에서 한 사람만 신청돼요.'));
+  v.$sign.append(v.$signHead, v.name, v.$cats, v.$ex, v.dish, v.$signBtns,
+    h('p', 'hint', '카테고리를 고르고 예시를 누르거나 가져올 메뉴를 직접 적어요. 줄 그은 메뉴는 이미 누가 가져와요. 메뉴는 나중에 정해도 돼요. 이 기기에서 한 사람만 신청돼요.'));
   v.$owner = h('section', 'panel pot-panel');
   v.$ownerTop = h('div', 'pot-owner');
   v.$restBox = h('div', 'pot-owner');
@@ -181,7 +182,15 @@ function paintSign(v) {
     b.disabled = !c.slots || (left <= 0 && mine?.cat !== i);
     return b;
   }));
-  v.dish.placeholder = sel == null ? '가져올 메뉴 (안 정했으면 비워 둬요)' : `예: ${p.cats[sel].ex || ''}`;
+  v.dish.placeholder = sel == null ? '가져올 메뉴 (비워 둬도 돼요)' : '가져올 메뉴 (직접 적어도 돼요)';
+  // 고른 카테고리의 예시 메뉴: 누르면 메뉴 칸에. 다른 사람이 이미 가져오는 메뉴는 줄을 그음
+  const taken = new Set(v.entries.filter(e => !e.mine && e.dish).map(e => nameKey(e.dish)));
+  v.$ex.hidden = sel == null;
+  v.$ex.replaceChildren(...(sel == null ? [] : exList(p.cats[sel].ex).map(x => {
+    const b = button(x, () => { v.dish.value = x; v.dishTouched = true; paint(v); }, `${v.dish.value === x ? 'on' : ''}${taken.has(nameKey(x)) ? ' taken' : ''}`);
+    if (taken.has(nameKey(x))) b.title = '이미 누가 가져와요';
+    return b;
+  })));
   if (mine && !v.dishTouched) v.dish.value = mine.dish; // 내 신청 메뉴를 칸에 (고치는 중이면 그대로)
   v.$signHead.textContent = mine ? `✓ 신청했어요 · ${p.cats[mine.cat].name}` : '🙋 내 신청';
   const go = button(mine ? '바꾸기' : '신청하기', () => sign(v, sel), 'btn primary');

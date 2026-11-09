@@ -10,6 +10,17 @@ test('추천 칸: 합은 인원 수, 8명이면 메인·디저트 2칸씩', () =
   assert.deepEqual([...P.recommendSlots(10)], [2, 3, 1, 1, 2, 1]);
 });
 
+test('예시 메뉴: 카테고리마다 5개 넘게, 겹치지 않고, 쉼표 없이 (저장할 때 쉼표로 이음)', () => {
+  for (const c of P.POT_CATS) {
+    assert.ok(c.ex.length >= 5, c.name);
+    assert.equal(new Set(c.ex).size, c.ex.length, c.name);
+    assert.ok(c.ex.every(x => !x.includes(',')), c.name);
+    assert.deepEqual([...P.exList(c.ex.join(', '))], c.ex, '저장했다 다시 읽어도 그대로');
+  }
+  assert.deepEqual([...P.exList('잡채, 라자냐')], ['잡채', '라자냐']); // 예전 포트럭
+  assert.deepEqual([...P.exList(undefined)], []);
+});
+
 const CATS = [{ name: 'A', slots: 2 }, { name: 'B', slots: 1 }, { name: 'C', slots: 0 }];
 const E = (name, cat, at = 0) => ({ name, cat, dish: '', at });
 
