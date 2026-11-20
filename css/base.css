@@ -72,6 +72,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   backdrop-filter: blur(10px);
 }
 .game-head h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+.game-head h1 img { width: 1.5em; height: 1.5em; vertical-align: middle; margin: -0.2em .5rem 0 0; }
 .game-head .head-end { margin-left: auto; display: flex; gap: .375rem; }
 main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
 /* 폰 기준 페이지 (폭탄 돌리기·시크릿 산타 개인 화면) */
