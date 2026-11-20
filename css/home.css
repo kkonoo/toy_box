@@ -1,23 +1,74 @@
-/* 홈: 게임 카드. 평소엔 얇은 선, 올리면 선이 강조색으로 바뀌고 살짝 뜸 */
-.game-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: 1rem; }
+/* 홈·크리스마스 모음: 흐린 색 덩어리 배경 위에 유리 카드. 마우스를 올리면 4px 떠오르고 유리가 조금 더 밝아짐
+   카드 안: 아이콘 칸 · 이름 · 설명 · 아래 줄(어디서 하는지 알약 + → 동그라미). 놀이 화면은 단색 배경 (css/base.css) */
+:root {
+  --blob-1: rgb(125 184 255 / .7); --blob-2: rgb(249 168 212 / .8); --blob-3: rgb(196 181 253 / .8); --blob-4: rgb(253 186 116 / .6); --blob-5: rgb(134 239 172 / .5);
+  --card-title: #15171E; --card-text: #3D4250; --pill-text: #2A2E38; --go-icon: #1F2430; --card-focus: #2A3BB8;
+  --well-bg: rgba(255, 255, 255, .5); --well-line: rgba(255, 255, 255, .85); --well-shadow: inset 0 1px 0 #fff, 0 6px 18px rgba(76, 64, 150, .12);
+  --pill-bg: rgba(255, 255, 255, .45); --pill-line: rgba(255, 255, 255, .8);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --blob-1: rgb(59 130 246 / .5); --blob-2: rgb(236 72 153 / .42); --blob-3: rgb(139 92 246 / .5); --blob-4: rgb(245 158 11 / .3); --blob-5: rgb(16 185 129 / .32);
+    --card-title: #F5F6FA; --card-text: #C3C8D4; --pill-text: #E4E6EE; --go-icon: #F2F3F7; --card-focus: #A5B4FC;
+    --well-bg: rgba(255, 255, 255, .08); --well-line: rgba(255, 255, 255, .16); --well-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .3);
+    --pill-bg: rgba(255, 255, 255, .07); --pill-line: rgba(255, 255, 255, .14);
+  }
+}
+:root[data-theme="dark"] {
+  --blob-1: rgb(59 130 246 / .5); --blob-2: rgb(236 72 153 / .42); --blob-3: rgb(139 92 246 / .5); --blob-4: rgb(245 158 11 / .3); --blob-5: rgb(16 185 129 / .32);
+  --card-title: #F5F6FA; --card-text: #C3C8D4; --pill-text: #E4E6EE; --go-icon: #F2F3F7; --card-focus: #A5B4FC;
+  --well-bg: rgba(255, 255, 255, .08); --well-line: rgba(255, 255, 255, .16); --well-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .3);
+  --pill-bg: rgba(255, 255, 255, .07); --pill-line: rgba(255, 255, 255, .14);
+}
+
+/* 배경: 흐린 색 덩어리 다섯 개, 스크롤해도 그대로. blur 필터 대신 가장자리가 흐린 원형 그러데이션이라 폰에서도 가벼움 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 370px at calc(-6% + 210px) calc(110% - 210px), var(--blob-5) 50px, transparent),
+    radial-gradient(circle 390px at calc(92% - 230px) calc(106% - 230px), var(--blob-4) 70px, transparent),
+    radial-gradient(circle 420px at calc(22% + 260px) calc(40% + 260px), var(--blob-3) 100px, transparent),
+    radial-gradient(circle 440px at calc(110% - 280px) calc(10% + 280px), var(--blob-2) 120px, transparent),
+    radial-gradient(circle 470px at calc(-10% + 310px) calc(-12% + 310px), var(--blob-1) 150px, transparent);
+}
+
+.game-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1.75rem; }
 .game-card {
   display: flex;
   flex-direction: column;
-  gap: .3rem;
-  padding: 1.35rem 1.35rem 1.1rem;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
+  padding: 2rem;
+  border: 1px solid var(--glass-line);
+  border-radius: 1.75rem;
+  background: var(--glass);
+  box-shadow: var(--glass-shadow);
   text-decoration: none;
-  transition: transform .15s, border-color .15s, box-shadow .15s;
+  transition: transform .25s ease, background .25s ease;
 }
-.game-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: var(--shadow); }
-.game-card .emoji { display: grid; place-items: center; width: 3.6rem; height: 3.6rem; margin-bottom: .6rem; border-radius: 14px; background: var(--bg); font-size: 2.1rem; line-height: 1; }
-.game-card b { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
-.game-card span { color: var(--muted); font-size: .9rem; }
-.game-card small { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .9rem; font-size: .8rem; color: var(--muted); }
-.game-card small::after { content: "→"; font-size: 1rem; color: var(--faint); transition: transform .15s, color .15s; }
-.game-card:hover small::after { color: var(--accent); transform: translateX(3px); }
+.game-card:hover { transform: translateY(-4px); background: var(--glass-hover); }
+.game-card:focus-visible { outline: 3px solid var(--card-focus); outline-offset: 5px; }
+.game-card .emoji { display: grid; place-items: center; width: 4.875rem; height: 4.875rem; border: 1px solid var(--well-line); border-radius: 1.375rem; background: var(--well-bg); box-shadow: var(--well-shadow); font-size: 2.75rem; line-height: 1; }
+.game-card b { margin-top: 1.75rem; font-size: 1.625rem; font-weight: 800; letter-spacing: -0.02em; color: var(--card-title); }
+.game-card b + span { margin-top: .625rem; line-height: 1.6; color: var(--card-text); }
+.game-card small { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: 1.75rem; font-size: 1rem; }
+.game-card .pill { padding: .5rem .875rem; border: 1px solid var(--pill-line); border-radius: 999px; background: var(--pill-bg); font-size: .875rem; font-weight: 600; color: var(--pill-text); }
+.game-card .go { flex: none; display: grid; place-items: center; width: 2.875rem; height: 2.875rem; border: 1px solid var(--glass-btn-line); border-radius: 50%; background: var(--glass-btn); color: var(--go-icon); transition: background .25s ease; }
+.game-card .go::before { /* → 화살표 (선 굵기 2.2, 둥근 끝) */
+  content: "";
+  width: 1.25rem;
+  height: 1.25rem;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.game-card:hover .go { background: var(--glass-btn-hover); }
+@media (prefers-reduced-motion: reduce) {
+  .game-card, .game-card .go { transition: none; }
+  .game-card:hover { transform: none; }
+}
 
 /* 앱 설치 배너 (js/pwa.js) */
 .install-banner { display: flex; align-items: center; gap: .4rem; margin: 0 0 1rem; padding: .25rem .4rem .25rem .25rem; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: 12px; background: var(--accent-soft); }
@@ -26,7 +77,7 @@ button.banner-go { cursor: pointer; }
 
 .home-foot {
   padding: 1.25rem max(1.5rem, calc((100% - 1400px) / 2 + 1.5rem)) 2rem;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--glass-line);
   color: var(--muted);
   font-size: .85rem;
 }
@@ -34,9 +85,12 @@ button.banner-go { cursor: pointer; }
 @media (max-width: 900px) { .home-foot { padding-inline: 1rem; } }
 /* 폰: 카드를 가로로 (그림 왼쪽, 글 오른쪽) 눕혀서 한 화면에 더 많이 */
 @media (max-width: 560px) {
-  .game-cards { gap: .6rem; }
-  .game-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .15rem .9rem; padding: 1rem 1.1rem; }
-  .game-card .emoji { grid-row: span 3; width: 3.2rem; height: 3.2rem; margin: 0; font-size: 1.8rem; }
-  .game-card b { font-size: 1.1rem; }
-  .game-card small { padding-top: .35rem; }
+  .game-cards { gap: .75rem; }
+  .game-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .2rem 1rem; padding: 1.1rem; border-radius: 1.4rem; }
+  .game-card .emoji { grid-row: span 3; width: 3.5rem; height: 3.5rem; border-radius: 1rem; font-size: 2rem; }
+  .game-card b { margin-top: 0; font-size: 1.15rem; }
+  .game-card b + span { margin-top: 0; font-size: .9rem; line-height: 1.5; }
+  .game-card small { padding-top: .6rem; }
+  .game-card .pill { padding: .3rem .7rem; font-size: .8rem; }
+  .game-card .go { width: 2.25rem; height: 2.25rem; }
 }

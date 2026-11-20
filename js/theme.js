@@ -11,10 +11,10 @@
 
   function apply() {
     if (mode === 'auto') delete root.dataset.theme; else root.dataset.theme = mode;
-    // 주소창·상태 표시줄 색: 고른 밝기로. 자동이면 원래 값(media로 나뉜 두 줄)으로
-    for (const m of document.querySelectorAll('meta[name="theme-color"]')) {
+    // 주소창·상태 표시줄 색: 고른 밝기로. 자동이면 원래 값(media로 나뉜 두 줄)으로. 한 줄뿐인 페이지(타로, 늘 어두움)는 그대로
+    for (const m of document.querySelectorAll('meta[name="theme-color"][media]')) {
       m.dataset.auto ||= m.content;
-      m.content = mode === 'auto' ? m.dataset.auto : mode === 'dark' ? '#121214' : '#F5F4F0';
+      m.content = mode === 'auto' ? m.dataset.auto : mode === 'dark' ? '#0D0F17' : '#EEF0FA';
     }
   }
   function set(next) {

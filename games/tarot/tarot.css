@@ -1,9 +1,17 @@
-/* 타로: 밤 테이블 같은 남색 바탕에 금색 테두리 (라이트/다크와 상관없이 이 페이지는 늘 어둡게). 폰 우선, 큰 화면에선 카드가 커짐 */
-:root {
+/* 타로: 밤 테이블 같은 남색 바탕에 금색 테두리 (라이트/다크와 상관없이 이 페이지는 늘 어둡게). 폰 우선, 큰 화면에선 카드가 커짐
+   :root를 두 번 쓴 건 base.css의 어두운 색 선택자(:root[data-theme="dark"] 등)보다 앞서려고. 한 번만 쓰면 다크 모드에서 남색·금색이 사라짐 */
+:root:root {
   --bg: #15142A; --surface: #1E1D38; --surface-2: #26254A; --line: #34335C;
   --text: #EEEAF6; --muted: #A7A3C2; --faint: #6E6A8E;
   --accent: #D9B45A; --accent-soft: #3A3350; --on-accent: #1A1530; --danger: #FF7A7A;
   --shadow: none; --card-ink: #2A2340; --card-paper: #F6EFDD;
+  /* 유리도 늘 어두운 쪽 */
+  --glass: linear-gradient(150deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)), rgba(21, 20, 42, .42);
+  --glass-hover: linear-gradient(150deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06)), rgba(21, 20, 42, .38);
+  --glass-line: rgba(255, 255, 255, .14);
+  --glass-shadow: 0 14px 44px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
+  --glass-btn: rgba(255, 255, 255, .1); --glass-btn-hover: rgba(255, 255, 255, .22); --glass-btn-line: rgba(255, 255, 255, .18);
+  --glass-field: rgba(255, 255, 255, .08); --glass-solid: rgba(30, 29, 56, .85); --glass-blur: blur(26px) saturate(130%);
   color-scheme: dark;
 }
 main { max-width: 860px; display: flex; flex-direction: column; gap: 1rem; }

@@ -44,7 +44,8 @@ https://kkonoo.github.io/toy_box/
 index.html          홈: 게임 카드 (+ 앱 설치 배너)
 manifest.webmanifest, sw.js, js/pwa.js   앱 설치·오프라인 (온라인이면 늘 새 파일, 오프라인이면 저장해 둔 파일)
 icons/              앱 아이콘 (icons/icon.svg에서 tools/make-icons.py로 그림)
-css/base.css        모든 페이지가 같이 쓰는 색(라이트/다크 자동)·단추·판
+css/base.css        모든 페이지가 같이 쓰는 색(라이트/다크 자동)·유리 머리 줄·단추·판 (놀이 화면 배경은 단색)
+css/home.css        홈·크리스마스 모음: 흐린 색 덩어리 배경 + 유리 게임 카드
 js/ui.js            화면 만들기(h, button, svg, stepper), 이 기기에 저장(store), 소리·진동, 알림
 js/random.js        crypto.getRandomValues 난수 (randInt, cryptoShuffle)
 js/theme.js         화면 밝기 🌗 자동·☀️ 밝게·🌙 어둡게 (모든 페이지 <head>, 머리 줄 끝 단추, 이 기기 toybox:theme)

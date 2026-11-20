@@ -1,7 +1,10 @@
 /* 장난감 상자: 모든 페이지가 같이 쓰는 색·부품. 게임마다 따로인 모양은 games/<게임>/<게임>.css
-   크기는 rem: 폰은 16px, 큰 화면 게임(<html class="big">)은 노트북·프로젝터에서 글자·판이 같이 커짐 */
+   크기는 rem: 폰은 16px, 큰 화면 게임(<html class="big">)은 노트북·프로젝터에서 글자·판이 같이 커짐
+   유리(글래스모피즘)는 머리 줄·패널·단추에만. 제비·룰렛판·사다리 같은 게임 말은 불투명한 색 그대로
+   (큰 화면에서 배경에 묻히지 않게). 놀이 화면 배경은 단색이고, 흐린 색 덩어리 배경은 홈 카드 화면(css/home.css)에만.
+   흐림(backdrop-filter)은 무거워서 내용이 밑으로 지나가는 머리 줄·창·메뉴에만 */
 :root {
-  --bg: #F5F4F0;
+  --bg: #EEF0FA;
   --surface: #FFFFFF;
   --surface-2: #F9F8F6;
   --line: #E8E6E0;
@@ -14,23 +17,46 @@
   --gold: #D9A13B;
   --danger: #E5484D;
   --shadow: 0 1px 2px rgba(20, 20, 20, .04), 0 6px 20px rgba(20, 20, 20, .05);
-  --radius: 16px;
+  --radius: 24px;
+  /* 유리: 패널 · 단추 · 입력 칸 · 창 */
+  --glass: linear-gradient(150deg, rgba(255, 255, 255, .58), rgba(255, 255, 255, .26));
+  --glass-hover: linear-gradient(150deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .38));
+  --glass-line: rgba(255, 255, 255, .75);
+  --glass-shadow: 0 12px 40px rgba(76, 64, 150, .14), inset 0 1px 0 rgba(255, 255, 255, .95);
+  --glass-btn: rgba(255, 255, 255, .55);
+  --glass-btn-hover: rgba(255, 255, 255, .85);
+  --glass-btn-line: rgba(255, 255, 255, .85);
+  --glass-field: rgba(255, 255, 255, .5);
+  --glass-solid: rgba(255, 255, 255, .8);
+  --glass-blur: blur(26px) saturate(160%);
   color-scheme: only light; /* only = 삼성 인터넷 등이 강제로 어둡게 바꾸지 않게 */
 }
 /* 어두운 색: 기기 설정이 어두움(🌗 자동) 또는 🌙 어둡게를 고름 (js/theme.js가 <html data-theme>를 붙임). 게임 css도 같은 두 곳에 씀 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121214; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
+    --bg: #0D0F17; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
     --text: #ECECEE; --muted: #8E8E95; --faint: #5C5C63;
     --accent: #8F92FF; --accent-soft: #25264A; --on-accent: #101124; --gold: #E3B45C; --danger: #FF6B6F;
     --shadow: none; color-scheme: only dark;
+    --glass: linear-gradient(150deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)), rgba(13, 15, 23, .42);
+    --glass-hover: linear-gradient(150deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06)), rgba(13, 15, 23, .38);
+    --glass-line: rgba(255, 255, 255, .14);
+    --glass-shadow: 0 14px 44px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
+    --glass-btn: rgba(255, 255, 255, .1); --glass-btn-hover: rgba(255, 255, 255, .22); --glass-btn-line: rgba(255, 255, 255, .18);
+    --glass-field: rgba(255, 255, 255, .08); --glass-solid: rgba(22, 24, 34, .82); --glass-blur: blur(26px) saturate(130%);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #121214; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
+  --bg: #0D0F17; --surface: #1B1B1E; --surface-2: #222226; --line: #2C2C31;
   --text: #ECECEE; --muted: #8E8E95; --faint: #5C5C63;
   --accent: #8F92FF; --accent-soft: #25264A; --on-accent: #101124; --gold: #E3B45C; --danger: #FF6B6F;
   --shadow: none; color-scheme: only dark;
+  --glass: linear-gradient(150deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)), rgba(13, 15, 23, .42);
+  --glass-hover: linear-gradient(150deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06)), rgba(13, 15, 23, .38);
+  --glass-line: rgba(255, 255, 255, .14);
+  --glass-shadow: 0 14px 44px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
+  --glass-btn: rgba(255, 255, 255, .1); --glass-btn-hover: rgba(255, 255, 255, .22); --glass-btn-line: rgba(255, 255, 255, .18);
+  --glass-field: rgba(255, 255, 255, .08); --glass-solid: rgba(22, 24, 34, .82); --glass-blur: blur(26px) saturate(130%);
 }
 html { font-size: 16px; }
 @media (min-width: 1280px) { html.big { font-size: 18px; } }
@@ -66,10 +92,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   gap: .5rem;
   min-height: 3.75rem;
   padding: .5rem max(1.5rem, calc((100% - 1400px) / 2 + 1.5rem)); /* 글은 main과 같은 폭에 맞춤 */
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-line);
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
 }
 .game-head h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
 .game-head h1 img { width: 1.5em; height: 1.5em; vertical-align: middle; margin: -0.2em .5rem 0 0; }
@@ -79,12 +105,12 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
 .phone .game-head { padding-inline: max(1rem, calc((100% - 480px) / 2 + 1rem)); }
 .phone main { max-width: 480px; padding-inline: 1rem; }
 
-/* ---------- 단추 ---------- */
+/* ---------- 단추: 반투명 유리 알약 (흐림 없이). 주 단추(.primary)만 강조색으로 꽉 채움 ---------- */
 .btn {
-  border: 1px solid var(--line);
-  background: var(--surface);
-  padding: .5rem 1rem;
-  border-radius: 10px;
+  border: 1px solid var(--glass-btn-line);
+  background: var(--glass-btn);
+  padding: .5rem 1.1rem;
+  border-radius: 999px;
   font-size: .9rem;
   font-weight: 500;
   cursor: pointer;
@@ -92,12 +118,12 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
   text-decoration: none;
   transition: background .15s, border-color .15s, filter .15s;
 }
-.btn:hover { background: var(--surface-2); }
+.btn:hover { background: var(--glass-btn-hover); }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn.small { padding: .3rem .7rem; font-size: .8rem; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
 .btn.primary:hover { filter: brightness(1.08); }
-.btn.big { padding: .9rem 2.2rem; border-radius: 14px; font-size: 1.15rem; }
+.btn.big { padding: .9rem 2.2rem; font-size: 1.15rem; }
 .icon-btn {
   display: inline-grid;
   place-items: center;
@@ -114,34 +140,37 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
   color: var(--text);
   transition: background .15s;
 }
-.icon-btn:hover { background: var(--surface); }
+.icon-btn:hover { background: var(--glass-btn-hover); }
+.game-head .icon-btn { border: 1px solid var(--glass-btn-line); background: var(--glass-btn); } /* ‹ 처음으로 · 🌗 같은 머리 줄 동그라미 */
+.game-head .icon-btn:hover { background: var(--glass-btn-hover); }
 .icon-btn.small { width: 1.75rem; height: 1.75rem; font-size: 1rem; color: var(--muted); }
-.icon-btn.small:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn.small:hover { background: var(--glass-btn-hover); color: var(--text); }
 .icon-btn:disabled { opacity: .3; cursor: default; }
 
 /* 🌗 화면 밝기 단추와 고르는 메뉴 (js/theme.js) */
 .theme-btn { font-size: 1.15rem; }
-.theme-menu { position: fixed; inset: auto; margin: 0; padding: .3rem; min-width: 11rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); box-shadow: 0 12px 32px rgba(0, 0, 0, .18); }
+.theme-menu { position: fixed; inset: auto; margin: 0; padding: .3rem; min-width: 11rem; border: 1px solid var(--glass-line); border-radius: 14px; background: var(--glass-solid); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); color: var(--text); box-shadow: 0 12px 32px rgba(0, 0, 0, .18); }
 .theme-menu button { display: block; width: 100%; padding: .55rem .8rem; border: none; border-radius: 8px; background: transparent; font-size: .95rem; text-align: left; cursor: pointer; }
 .theme-menu button:hover { background: var(--surface-2); }
 .theme-menu button.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 
 /* 고르기 (짧게·보통·길게 같은 것) */
-.seg { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
-.seg button { flex: 1; padding: .4rem .9rem; border: none; border-radius: 9px; background: transparent; font-size: .9rem; color: var(--muted); cursor: pointer; white-space: nowrap; }
-.seg button.on { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.seg { display: inline-flex; padding: 3px; border-radius: 14px; background: var(--glass-field); border: 1px solid var(--glass-btn-line); }
+.seg button { flex: 1; padding: .4rem .9rem; border: none; border-radius: 11px; background: transparent; font-size: .9rem; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.seg button.on { background: var(--glass-btn-hover); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
 
 /* 알약 단추 (저장한 목록) */
 .pills { display: flex; flex-wrap: wrap; gap: .3rem; }
-.pills button { padding: .3rem .7rem; border: 1px solid var(--line); border-radius: 99px; background: transparent; font-size: .8rem; color: var(--muted); cursor: pointer; white-space: nowrap; }
-.pills button:hover { background: var(--surface-2); color: var(--text); }
+.pills button { padding: .3rem .7rem; border: 1px solid var(--glass-btn-line); border-radius: 99px; background: var(--glass-field); font-size: .8rem; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.pills button:hover { background: var(--glass-btn-hover); color: var(--text); }
 
 /* [−] 숫자 [＋] */
-.stepper { display: inline-flex; align-items: center; padding: 1px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); }
+.stepper { display: inline-flex; align-items: center; padding: 1px; border: 1px solid var(--glass-btn-line); border-radius: 99px; background: var(--glass-btn); }
 .stepper b { min-width: 1.8rem; text-align: center; font-variant-numeric: tabular-nums; }
 
 /* ---------- 판 ---------- */
-.panel { display: flex; flex-direction: column; padding: 1.1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+/* 유리 판: 뒤에는 늘 가만히 있는 배경뿐이라 흐림 없이 반투명 색·테두리·그림자만 (게임 말 움직임이 폰에서 버벅이지 않게) */
+.panel { display: flex; flex-direction: column; padding: 1.4rem; background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--radius); box-shadow: var(--glass-shadow); }
 .panel-head { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .5rem; }
 .panel-head h2 { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
 .panel-head > .btn { margin-left: auto; }
@@ -149,9 +178,9 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
 textarea, .text-input {
   width: 100%;
   padding: .6rem .8rem;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-2);
+  border: 1px solid var(--glass-btn-line);
+  border-radius: 12px;
+  background: var(--glass-field);
   line-height: 1.5;
   outline: none;
 }
@@ -173,9 +202,11 @@ textarea:focus, .text-input:focus { border-color: var(--accent); }
 dialog {
   width: min(380px, calc(100vw - 32px));
   padding: 1.4rem;
-  border: none;
-  border-radius: 16px;
-  background: var(--surface);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+  background: var(--glass-solid);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   color: var(--text);
   box-shadow: 0 24px 64px rgba(0, 0, 0, .25);
 }
@@ -204,5 +235,6 @@ dialog h2 { margin: .2rem 0 .8rem; font-size: 1.05rem; }
   .game-head { min-height: 3.25rem; padding: .4rem 1rem; }
   .game-head h1 { font-size: 1.1rem; }
   main { padding: 1rem .75rem 1.25rem; }
+  .panel { padding: 1.1rem; }
   .play-grid { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
 }
