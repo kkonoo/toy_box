@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 앱 아이콘 원본: 둥근 타일(모서리 114) 위 흰 심볼, 가운데 288px 안. PNG는 tools/make-icons.py로 그려요 -->
+  <rect width="512" height="512" rx="114" fill="#C1628A"/>
+  <path d="M256 98 Q264 142 308 150 Q264 158 256 202 Q248 158 204 150 Q248 142 256 98 Z" fill="#FFFFFF"/>
+  <polyline points="256,206 222,222 290,240 222,258 290,276 256,292" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="132" y="280" width="248" height="34" rx="12" fill="#FFFFFF" stroke="#C1628A" stroke-width="12"/>
+  <rect x="148" y="300" width="216" height="96" rx="20" fill="#FFFFFF"/>
+  <rect x="132" y="280" width="248" height="34" rx="12" fill="#FFFFFF"/>
+  <path d="M132 314 H380" stroke="#C1628A" stroke-width="12"/>
+</svg>

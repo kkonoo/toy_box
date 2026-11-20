@@ -1,27 +1,40 @@
-# 장난감 상자 앱 아이콘(icons/*.png): 연보라 바탕에 🧸. Noto Color Emoji 폰트(OFL)로 그림
-# 실행: python tools/make-icons.py [Noto Color Emoji 폰트 경로]   (Pillow 필요)
-import sys
+"""앱 아이콘(icons/*.png)을 icons/icon.svg에서 그려요.
+
+    python3 tools/make-icons.py      (Playwright 필요: pip install playwright && playwright install chromium)
+
+icon.svg = 둥근 타일(512 기준 모서리 114) 위에 흰 심볼 하나. 심볼은 가운데 288px 안에 두고,
+디테일은 타일 색으로 파내요. 그림을 바꾸려면 icon.svg만 고치고 다시 돌려요.
+- app-*.png          둥근 사각형 (PC·안드로이드)
+- app-maskable-*.png 꽉 찬 사각형 (기기가 알아서 동그랗게·둥글게 자름)
+- apple-touch-icon   꽉 찬 사각형, 투명 없음 (아이폰). icons/apple-touch-icon.png가 있는 앱만
+"""
+import asyncio
+import re
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
-out = Path(__file__).resolve().parent.parent / 'icons'
-font = ImageFont.truetype(sys.argv[1] if len(sys.argv) > 1 else '/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf', 109)  # 비트맵 폰트라 109 고정
-glyph = Image.new('RGBA', (320, 320), (0, 0, 0, 0))
-ImageDraw.Draw(glyph).text((160, 160), '🧸', font=font, embedded_color=True, anchor='mm')
-l, t, r, b = glyph.getbbox()
-glyph = glyph.crop((l - 4, t - 4, r + 4, b + 4))  # 가장자리가 확대 때 잘리지 않게 여백
-BG = (236, 237, 253, 255)  # --accent-soft #ECEDFD
 
-def icon(size, frac, rounded):
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    if rounded: d.rounded_rectangle((0, 0, size - 1, size - 1), radius=round(size * 0.22), fill=BG)
-    else: d.rectangle((0, 0, size, size), fill=BG)
-    w = round(size * frac); h = round(glyph.height * w / glyph.width)
-    g = glyph.resize((w, h), Image.LANCZOS)
-    img.alpha_composite(g, ((size - w) // 2, (size - h) // 2 + round(size * 0.01)))
-    return img
+from playwright.async_api import async_playwright
 
-for s in (192, 512):
-    icon(s, 0.66, True).save(f'{out}/app-{s}.png')
-    icon(s, 0.56, False).save(f'{out}/app-maskable-{s}.png')  # 마스커블: 가운데 80% 안에 들게
-icon(180, 0.62, False).convert('RGB').save(f'{out}/apple-touch-icon.png')  # 아이폰은 모서리를 알아서 둥글게
+ICONS = Path(__file__).resolve().parent.parent / 'icons'
+SVG = (ICONS / 'icon.svg').read_text(encoding='utf-8')
+SQUARE = re.sub(r'rx="\d+"', 'rx="0"', SVG, count=1)  # 맨 앞 타일만 모서리 없이 (심볼 안 둥근 모서리는 그대로)
+
+JOBS = [
+    ('app-192.png', SVG, 192), ('app-512.png', SVG, 512),
+    ('app-maskable-192.png', SQUARE, 192), ('app-maskable-512.png', SQUARE, 512),
+]
+if (ICONS / 'apple-touch-icon.png').exists():
+    JOBS.append(('apple-touch-icon.png', SQUARE, 180))
+
+
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch()
+        pg = await b.new_page()
+        for name, svg, size in JOBS:
+            await pg.set_viewport_size({'width': size, 'height': size})
+            await pg.set_content(f'<style>html,body{{margin:0;background:transparent}}svg{{display:block;width:{size}px;height:{size}px}}</style>{svg}')
+            await pg.screenshot(path=str(ICONS / name), omit_background=name != 'apple-touch-icon.png')
+            print(name)
+        await b.close()
+
+asyncio.run(main())

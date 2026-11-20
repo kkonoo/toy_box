@@ -43,7 +43,7 @@ https://kkonoo.github.io/toy_box/
 ```
 index.html          홈: 게임 카드 (+ 앱 설치 배너)
 manifest.webmanifest, sw.js, js/pwa.js   앱 설치·오프라인 (온라인이면 늘 새 파일, 오프라인이면 저장해 둔 파일)
-icons/              앱 아이콘 🧸 (tools/make-icons.py로 그림, Noto Color Emoji · OFL)
+icons/              앱 아이콘 (icons/icon.svg에서 tools/make-icons.py로 그림)
 css/base.css        모든 페이지가 같이 쓰는 색(라이트/다크 자동)·단추·판
 js/ui.js            화면 만들기(h, button, svg, stepper), 이 기기에 저장(store), 소리·진동, 알림
 js/random.js        crypto.getRandomValues 난수 (randInt, cryptoShuffle)
