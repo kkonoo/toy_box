@@ -1,6 +1,6 @@
 rules_version = '2';
 // 장난감 상자 Firestore 보안 규칙 → Firebase 콘솔 › Firestore Database › 규칙에 그대로 붙여 넣어요
-// 쓰는 곳은 투표(games/vote)·포트럭(games/potluck)·누가 썼을까(games/whowrote)·시크릿 산타 위시리스트(games/santa). 모두 로그인 화면 없이 익명 로그인(기기마다 따로)
+// 쓰는 곳은 투표(games/vote)·포트럭(games/potluck)·초대장(games/invite)·누가 썼을까(games/whowrote)·시크릿 산타 위시리스트(games/santa). 모두 로그인 화면 없이 익명 로그인(기기마다 따로)
 // 투표: 1기기 1표
 // 익명 로그인 uid는 그대로 저장하지 않고 투표마다 다르게 섞은 열쇠로만 씀 (games/vote/vote-db.js voteKey와 같은 계산)
 //   주최자 열쇠 = sha256('owner:' + uid + ':' + 투표 id), 표 열쇠 = sha256('vote:' + uid + ':' + 투표 id)
@@ -81,6 +81,45 @@ service cloud.firestore {
           (e == key('entry', p) && !potDoc(p).closed && newEntry(request.resource.data, potDoc(p), false))
           || (e != key('entry', p) && isOwner(potDoc(p), p) && newEntry(request.resource.data, potDoc(p), true)));
         allow delete: if signedIn() && ((e == key('entry', p) && !potDoc(p).closed) || isOwner(potDoc(p), p));
+      }
+    }
+
+    // 초대장 (games/invite/invite-db.js): invites/{초대장} · invites/{초대장}/rsvps/{답장}
+    // 답장은 기기마다 하나(id = sha256('rsvp:' + uid + ':' + 초대장 id)). 누가 오는지는 링크를 받은 사람 모두 봄
+    // 초대장 고치기·지우기, 남의 답장 빼기는 만든 기기만
+    function inviteFields(d) {
+      return d.title is string && d.title.size() > 0 && d.title.size() <= 60
+        && d.date is string && d.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && d.time is string && d.time.matches('[0-9]{2}:[0-9]{2}')
+        && d.until is string && d.until.matches('([0-9]{2}:[0-9]{2})?')
+        && d.place is string && d.place.size() <= 80
+        && d.program is string && d.program.size() <= 600
+        && d.note is string && d.note.size() <= 400;
+    }
+    function newRsvp(d) {
+      return d.keys().hasOnly(['name', 'answer', 'msg', 'at'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 20
+        && d.answer in ['yes', 'maybe', 'no']
+        && d.msg is string && d.msg.size() <= 60
+        && d.at == request.time;
+    }
+    match /invites/{i} {
+      allow get: if signedIn(); // 링크(초대장 id)를 아는 사람만 — 목록은 못 봄
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['title', 'date', 'time', 'until', 'place', 'program', 'note', 'owner', 'createdAt'])
+        && inviteFields(request.resource.data)
+        && request.resource.data.owner == key('owner', i) && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && isOwner(resource.data, i)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'date', 'time', 'until', 'place', 'program', 'note'])
+        && inviteFields(request.resource.data);
+      allow delete: if signedIn() && isOwner(resource.data, i);
+
+      match /rsvps/{r} {
+        allow read: if signedIn();
+        allow create, update: if signedIn() && r == key('rsvp', i)
+          && exists(/databases/$(database)/documents/invites/$(i)) && newRsvp(request.resource.data);
+        allow delete: if signedIn() && (r == key('rsvp', i)
+          || isOwner(get(/databases/$(database)/documents/invites/$(i)).data, i));
       }
     }
 

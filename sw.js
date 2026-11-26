@@ -10,6 +10,7 @@ const SHELL = [
   'games/ladder/', 'games/ladder/ladder.css', 'games/ladder/ladder-core.js', 'games/ladder/ladder.js',
   'games/bomb/', 'games/bomb/bomb.css', 'games/bomb/bomb-core.js', 'games/bomb/bomb.js',
   'games/christmas/', 'games/christmas/christmas.css',
+  'games/invite/', 'games/invite/invite.css', 'games/invite/invite-core.js', 'games/invite/invite-db.js', 'games/invite/invite.js',
   'games/potluck/', 'games/potluck/potluck.css', 'games/potluck/potluck-core.js', 'games/potluck/potluck-db.js', 'games/potluck/potluck.js',
   'games/santa/', 'games/santa/me.html', 'games/santa/santa.css', 'games/santa/santa-core.js', 'games/santa/santa.js', 'games/santa/santa-db.js', 'games/santa/me.js',
   'games/swap/', 'games/swap/swap.css', 'games/swap/swap-core.js', 'games/swap/swap.js',
