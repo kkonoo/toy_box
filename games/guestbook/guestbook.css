@@ -1,0 +1,42 @@
+/* 방명록: 맨 위에 행사 카드, 아래에 남기기 · 남긴 글(왔어요 / 못 왔어요로 나눔) · 나눠 주기. 색은 css/base.css 그대로 */
+main { max-width: 640px; }
+.gb-panel { gap: .7rem; margin-bottom: 1rem; }
+.gb-panel h2 { margin: 0; font-size: 1.1rem; }
+.gb-panel > .hint { margin: 0; line-height: 1.55; }
+.gb-panel > .big { align-self: center; }
+.gb-panel > .hint .btn { margin-left: .3rem; }
+.gb-wait { color: var(--muted); text-align: center; }
+.gb-field { display: flex; flex-direction: column; gap: .4rem; }
+.gb-field > b { font-size: .9rem; }
+.gb-recent { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.gb-recent li { display: flex; align-items: center; justify-content: space-between; padding: .3rem 0; }
+
+/* 행사 카드 */
+.gb-slot { margin-bottom: 1rem; }
+.gb-card { gap: .9rem; padding: 0 0 1.4rem; overflow: hidden; text-align: center; }
+.gb-top { padding: .7rem 1.2rem; background: var(--accent); color: var(--on-accent); font-weight: 700; text-align: left; }
+.gb-title { margin: .4rem 1.2rem 0; font-size: clamp(1.6rem, 6.5vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; overflow-wrap: anywhere; }
+.gb-rows { display: flex; flex-direction: column; gap: .5rem; margin: 0 1.2rem; text-align: left; }
+.gb-row { display: flex; gap: .7rem; align-items: center; padding: .7rem .9rem; border-radius: 14px; background: var(--glass-field); }
+.gb-row b { min-width: 0; overflow-wrap: anywhere; }
+.gb-icon { font-size: 1.2rem; line-height: 1.3; }
+
+/* 남기기 */
+.gb-answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; }
+
+/* 남긴 글 */
+.gb-count { display: flex; flex-wrap: wrap; gap: .3rem; }
+.gb-count span { padding: .15rem .65rem; border-radius: 99px; background: var(--glass-field); font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gb-count span.came { color: var(--accent); font-weight: 700; }
+.gb-groups { display: flex; flex-direction: column; gap: .8rem; }
+.gb-group h3 { margin: 0 0 .35rem; font-size: .9rem; color: var(--muted); }
+.gb-group.came h3 { color: var(--accent); }
+.gb-group ul { display: flex; flex-direction: column; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.gb-group li { display: flex; flex-direction: column; gap: .2rem; padding: .55rem .75rem; border-radius: 12px; background: var(--glass-field); }
+.gb-group li.mine { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.gb-who { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-height: 1.75rem; }
+.gb-who b { min-width: 0; overflow-wrap: anywhere; }
+.gb-msg, .gb-wish { margin: 0; white-space: pre-line; line-height: 1.55; overflow-wrap: anywhere; }
+.gb-wish { color: var(--muted); font-size: .9rem; }
+.gb-wish b { color: var(--text); font-weight: 600; }
+.gb-qr .qr { display: block; width: min(100%, 16rem); margin: .3rem auto 0; border-radius: 10px; }
