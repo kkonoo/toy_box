@@ -184,7 +184,21 @@ function paintEntries(v) {
     box.append(h('h3', '', `${icon} ${label} ${list.length}명`), ul);
     groups.append(box);
   }
-  v.$list.replaceChildren(h('h2', '', '📖 남긴 글'), count, v.entries.length ? groups : h('p', 'hint', '아직 남긴 글이 없어요.'));
+  const head = h('div', 'panel-head');
+  head.append(h('h2', '', '📖 남긴 글'), button('📊 엑셀로 받기', () => saveXlsx(v), 'btn small'));
+  v.$list.replaceChildren(head, count, v.entries.length ? groups : h('p', 'hint', '아직 남긴 글이 없어요.'));
+}
+// 행사 정보와 남긴 글을 엑셀 파일(.xlsx)로 내려받음 (보이는 글 그대로, 링크를 연 기기 어디서나)
+function saveXlsx(v) {
+  const blob = new Blob([xlsxBytes('방명록', exportRows(v.book, v.entries), EXPORT_WIDTHS)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const a = h('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = exportName(v.book);
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  toast('엑셀 파일을 내려받았어요');
 }
 async function sign(v, came) {
   const name = v.name.value.trim();
